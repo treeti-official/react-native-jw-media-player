@@ -8,8 +8,9 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.IllegalViewOperationException;
-import com.longtailvideo.jwplayer.configuration.PlayerConfig;
-import com.longtailvideo.jwplayer.configuration.SkinConfig;
+import com.facebook.react.uimanager.NativeViewHierarchyManager;
+import com.facebook.react.uimanager.UIBlock;
+import com.facebook.react.uimanager.UIManagerModule;
 import com.longtailvideo.jwplayer.core.PlayerState;
 import com.longtailvideo.jwplayer.media.playlists.PlaylistItem;
 
@@ -28,243 +29,343 @@ public class RNJWPlayerModule extends ReactContextBaseJavaModule {
     mReactContext = reactContext;
   }
 
-  private void setCustomStyle(String name) {
-    SkinConfig skinConfig = new SkinConfig.Builder()
-              .name(name)
-              .url(String.format("file:///android_asset/%s.css", name))
-              .build();
-
-    PlayerConfig config = RNJWPlayerViewManager.mPlayerView.getConfig();
-    config.setSkinConfig(skinConfig);
-
-    RNJWPlayerViewManager.mPlayerView.setup(config);
-  }
-
   @Override
   public String getName() {
     return "RNJWPlayerModule";
   }
 
   @ReactMethod
-  public void play() {
-    if (RNJWPlayerViewManager.mPlayerView != null) {
-      RNJWPlayerViewManager.mPlayerView.play();
-    }
-  }
-
-  @ReactMethod
-  public void toggleSpeed() {
-    if (RNJWPlayerViewManager.mPlayerView != null) {
-      float rate = RNJWPlayerViewManager.mPlayerView.getPlaybackRate();
-      if (rate < 2) {
-        RNJWPlayerViewManager.mPlayerView.setPlaybackRate(rate += 0.5);
-      } else {
-        RNJWPlayerViewManager.mPlayerView.setPlaybackRate((float) 0.5);
-      }
-    }
-  }
-
-  @ReactMethod
-  public void setSpeed(float speed) {
-    if (RNJWPlayerViewManager.mPlayerView != null) {
-      RNJWPlayerViewManager.mPlayerView.setPlaybackRate(speed);
-    }
-  }
-
-  @ReactMethod
-  public void pause() {
-    if (RNJWPlayerViewManager.mPlayerView != null) {
-      RNJWPlayerViewManager.mPlayerView.pause();
-    }
-  }
-
-  @ReactMethod
-  public void stop() {
-    if (RNJWPlayerViewManager.mPlayerView != null) {
-      RNJWPlayerViewManager.mPlayerView.stop();
-    }
-  }
-
-  @ReactMethod
-  public void loadPlaylistItem(ReadableMap playlistItem) {
-    if (playlistItem != null && RNJWPlayerViewManager.mPlayerView != null) {
-      if (playlistItem.hasKey("file")) {
-        String newFile = playlistItem.getString("file");
-
-        PlaylistItem newPlayListItem = new PlaylistItem();
-
-        newPlayListItem.setFile(newFile);
-
-        if (playlistItem.hasKey("playerStyle")) {
-          setCustomStyle(playlistItem.getString("playerStyle"));
-        }
-
-        if (playlistItem.hasKey("title")) {
-          newPlayListItem.setTitle(playlistItem.getString("title"));
-        }
-
-        if (playlistItem.hasKey("desc")) {
-          newPlayListItem.setDescription(playlistItem.getString("desc"));
-        }
-
-        if (playlistItem.hasKey("image")) {
-          newPlayListItem.setImage(playlistItem.getString("image"));
-        }
-
-        if (playlistItem.hasKey("mediaId")) {
-          newPlayListItem.setMediaId(playlistItem.getString("mediaId"));
-        }
-
-        Boolean autostart = true;
-        Boolean controls = true;
-
-        if (playlistItem.hasKey("autostart")) {
-          autostart = playlistItem.getBoolean("autostart");
-        }
-
-        if (playlistItem.hasKey("controls")) {
-          controls = playlistItem.getBoolean("controls");
-        }
-
-        RNJWPlayerViewManager.mPlayerView.getConfig().setAutostart(autostart);
-        RNJWPlayerViewManager.mPlayerView.getConfig().setControls(controls);
-        RNJWPlayerViewManager.mPlayerView.setControls(controls);
-
-        RNJWPlayerViewManager.mPlayerView.load(newPlayListItem);
-      }
-    }
-  }
-
-  @ReactMethod
-  public void seekTo(double time) {
-    if (RNJWPlayerViewManager.mPlayerView != null) {
-      RNJWPlayerViewManager.mPlayerView.seek(time);
-    }
-  }
-
-  @ReactMethod
-  public void setPlaylistIndex(int index) {
-    if (RNJWPlayerViewManager.mPlayerView != null) {
-      RNJWPlayerViewManager.mPlayerView.setCurrentAudioTrack(index);
-    }
-  }
-
-  @ReactMethod
-  public void setControls(boolean show) {
-    if (RNJWPlayerViewManager.mPlayerView != null) {
-      RNJWPlayerViewManager.mPlayerView.setControls(show);
-      RNJWPlayerViewManager.mPlayerView.getConfig().setControls(show);
-    }
-  }
-
-  @ReactMethod
-  public void loadPlaylist(ReadableArray playlist) {
-    if (playlist != null && playlist.size() > 0 && RNJWPlayerViewManager.mPlayerView != null) {
-
-      List<PlaylistItem> mPlayList = new ArrayList<>();
-      ReadableMap playlistItem;
-      String file = "";
-      String image = "";
-      String title = "";
-      String desc = "";
-      String mediaId = "";
-      Boolean autostart = true;
-      Boolean controls = true;
-
-      int j = 0;
-      while (playlist.size() > j) {
-        playlistItem = playlist.getMap(j);
-
-        if (playlistItem != null) {
-
-          if (playlistItem.hasKey("file")) {
-            file = playlistItem.getString("file");
-          }
-
-          if (playlistItem.hasKey("title")) {
-            title = playlistItem.getString("title");
-          }
-
-          if (playlistItem.hasKey("desc")) {
-            desc = playlistItem.getString("desc");
-          }
-
-          if (playlistItem.hasKey("image")) {
-            image = playlistItem.getString("image");
-          }
-
-          if (playlistItem.hasKey("mediaId")) {
-            mediaId = playlistItem.getString("mediaId");
-          }
-
-          if (playlistItem.hasKey("autostart")) {
-            autostart = playlistItem.getBoolean("autostart");
-          }
-
-          if (playlistItem.hasKey("controls")) {
-            controls = playlistItem.getBoolean("controls");
-          }
-
-          PlaylistItem newPlayListItem = new PlaylistItem.Builder()
-                  .file(file)
-                  .title(title)
-                  .description(desc)
-                  .image(image)
-                  .mediaId(mediaId)
-                  .build();
-
-          mPlayList.add(newPlayListItem);
-        }
-
-        j++;
-      }
-
-      if (playlist.getMap(0).hasKey("playerStyle")) {
-        setCustomStyle(playlist.getMap(0).getString("playerStyle"));
-      }
-
-      RNJWPlayerViewManager.mPlayerView.getConfig().setAutostart(autostart);
-      RNJWPlayerViewManager.mPlayerView.getConfig().setControls(controls);
-      RNJWPlayerViewManager.mPlayerView.setControls(controls);
-
-      RNJWPlayerViewManager.mPlayerView.load(mPlayList);
-
-      RNJWPlayerViewManager.mPlayerView.play();
-    }
-  }
-
-  @ReactMethod
-  public void position(/*final int reactTag, */final Promise promise) {
+  public void play(final int reactTag) {
     try {
-//      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
-//      uiManager.addUIBlock(new UIBlock() {
-//        public void execute (NativeViewHierarchyManager nvhm) {
-//          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
-//          //RNJWPlayerViewManager playerViewManager = (RNJWPlayerViewManager) nvhm.resolveViewManager(reactTag);
-//          promise.resolve((Double.valueOf(playerView.getPosition()).intValue()));
-//        }
-//      });
-      promise.resolve((Double.valueOf(RNJWPlayerViewManager.mPlayerView.getPosition()).intValue()));
+      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+        public void execute (NativeViewHierarchyManager nvhm) {
+          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
+
+          if (playerView != null) {
+            playerView.play();
+          }
+        }
+      });
+    } catch (IllegalViewOperationException e) {
+      throw e;
+    }
+  }
+
+  @ReactMethod
+  public void toggleSpeed(final int reactTag) {
+    try {
+      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+        public void execute (NativeViewHierarchyManager nvhm) {
+          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
+
+          if (playerView != null) {
+            float rate = playerView.getPlaybackRate();
+            if (rate < 2) {
+              playerView.setPlaybackRate(rate += 0.5);
+            } else {
+              playerView.setPlaybackRate((float) 0.5);
+            }
+          }
+        }
+      });
+    } catch (IllegalViewOperationException e) {
+      throw e;
+    }
+  }
+
+  @ReactMethod
+  public void setSpeed(final int reactTag, final float speed) {
+    try {
+      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+        public void execute (NativeViewHierarchyManager nvhm) {
+          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
+
+          if (playerView != null) {
+            playerView.setPlaybackRate(speed);
+          }
+        }
+      });
+    } catch (IllegalViewOperationException e) {
+      throw e;
+    }
+  }
+
+  @ReactMethod
+  public void pause(final int reactTag) {
+    try {
+      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+        public void execute (NativeViewHierarchyManager nvhm) {
+          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
+
+          if (playerView != null) {
+            playerView.pause();
+          }
+        }
+      });
+    } catch (IllegalViewOperationException e) {
+      throw e;
+    }
+  }
+
+  @ReactMethod
+  public void stop(final int reactTag) {
+    try {
+      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+        public void execute (NativeViewHierarchyManager nvhm) {
+          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
+
+          if (playerView != null) {
+            playerView.stop();
+          }
+        }
+      });
+    } catch (IllegalViewOperationException e) {
+      throw e;
+    }
+  }
+
+  @ReactMethod
+  public void loadPlaylistItem(final int reactTag, final ReadableMap playlistItem) {
+    try {
+      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+        public void execute (NativeViewHierarchyManager nvhm) {
+          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
+
+          if (playlistItem != null && playerView != null) {
+            if (playlistItem.hasKey("file")) {
+              String newFile = playlistItem.getString("file");
+
+              PlaylistItem newPlayListItem = new PlaylistItem();
+
+              newPlayListItem.setFile(newFile);
+
+              if (playlistItem.hasKey("playerStyle")) {
+                playerView.setCustomStyle(playlistItem.getString("playerStyle"));
+              }
+
+              if (playlistItem.hasKey("title")) {
+                newPlayListItem.setTitle(playlistItem.getString("title"));
+              }
+
+              if (playlistItem.hasKey("desc")) {
+                newPlayListItem.setDescription(playlistItem.getString("desc"));
+              }
+
+              if (playlistItem.hasKey("image")) {
+                newPlayListItem.setImage(playlistItem.getString("image"));
+              }
+
+              if (playlistItem.hasKey("mediaId")) {
+                newPlayListItem.setMediaId(playlistItem.getString("mediaId"));
+              }
+
+              Boolean autostart = true;
+              Boolean controls = true;
+
+              if (playlistItem.hasKey("autostart")) {
+                autostart = playlistItem.getBoolean("autostart");
+              }
+
+              if (playlistItem.hasKey("controls")) {
+                controls = playlistItem.getBoolean("controls");
+              }
+
+              playerView.getConfig().setAutostart(autostart);
+              playerView.getConfig().setControls(controls);
+              playerView.setControls(controls);
+
+              playerView.load(newPlayListItem);
+            }
+          }
+        }
+      });
+    } catch (IllegalViewOperationException e) {
+      throw e;
+    }
+  }
+
+  @ReactMethod
+  public void seekTo(final int reactTag, final double time) {
+    try {
+      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+        public void execute (NativeViewHierarchyManager nvhm) {
+          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
+
+          if (playerView != null) {
+            playerView.seek(time);
+          }
+        }
+      });
+    } catch (IllegalViewOperationException e) {
+      throw e;
+    }
+  }
+
+  @ReactMethod
+  public void setPlaylistIndex(final int reactTag, final int index) {
+    try {
+      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+        public void execute (NativeViewHierarchyManager nvhm) {
+          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
+
+          if (playerView != null) {
+            playerView.setCurrentAudioTrack(index);
+          }
+        }
+      });
+    } catch (IllegalViewOperationException e) {
+      throw e;
+    }
+  }
+
+  @ReactMethod
+  public void setControls(final int reactTag, final boolean show) {
+    try {
+      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+        public void execute (NativeViewHierarchyManager nvhm) {
+          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
+
+          if (playerView != null) {
+            playerView.setControls(show);
+            playerView.getConfig().setControls(show);
+          }
+        }
+      });
+    } catch (IllegalViewOperationException e) {
+      throw e;
+    }
+  }
+
+  @ReactMethod
+  public void loadPlaylist(final int reactTag, final ReadableArray playlist) {
+    try {
+      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+        public void execute(NativeViewHierarchyManager nvhm) {
+          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
+
+          if (playlist != null && playlist.size() > 0 && playerView != null) {
+
+            List<PlaylistItem> mPlayList = new ArrayList<>();
+            ReadableMap playlistItem;
+            String file = "";
+            String image = "";
+            String title = "";
+            String desc = "";
+            String mediaId = "";
+            Boolean autostart = true;
+            Boolean controls = true;
+
+            int j = 0;
+            while (playlist.size() > j) {
+              playlistItem = playlist.getMap(j);
+
+              if (playlistItem != null) {
+
+                if (playlistItem.hasKey("file")) {
+                  file = playlistItem.getString("file");
+                }
+
+                if (playlistItem.hasKey("title")) {
+                  title = playlistItem.getString("title");
+                }
+
+                if (playlistItem.hasKey("desc")) {
+                  desc = playlistItem.getString("desc");
+                }
+
+                if (playlistItem.hasKey("image")) {
+                  image = playlistItem.getString("image");
+                }
+
+                if (playlistItem.hasKey("mediaId")) {
+                  mediaId = playlistItem.getString("mediaId");
+                }
+
+                if (playlistItem.hasKey("autostart")) {
+                  autostart = playlistItem.getBoolean("autostart");
+                }
+
+                if (playlistItem.hasKey("controls")) {
+                  controls = playlistItem.getBoolean("controls");
+                }
+
+                PlaylistItem newPlayListItem = new PlaylistItem.Builder()
+                        .file(file)
+                        .title(title)
+                        .description(desc)
+                        .image(image)
+                        .mediaId(mediaId)
+                        .build();
+
+                mPlayList.add(newPlayListItem);
+              }
+
+              j++;
+            }
+
+            if (playlist.getMap(0).hasKey("playerStyle")) {
+              playerView.setCustomStyle(playlist.getMap(0).getString("playerStyle"));
+            }
+
+            playerView.getConfig().setAutostart(autostart);
+            playerView.getConfig().setControls(controls);
+            playerView.setControls(controls);
+            playerView.load(mPlayList);
+            playerView.play();
+          }
+        }
+      });
+    } catch (IllegalViewOperationException e) {
+      throw e;
+    }
+  }
+
+  @ReactMethod
+  public void position(final int reactTag, final Promise promise) {
+    try {
+      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+        public void execute (NativeViewHierarchyManager nvhm) {
+          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
+
+          if (playerView != null) {
+            promise.resolve((Double.valueOf(playerView.getPosition()).intValue()));
+          } else {
+            promise.reject("RNJW Error", "Player is null");
+          }
+        }
+      });
     } catch (IllegalViewOperationException e) {
       promise.reject("RNJW Error", e);
     }
   }
 
   @ReactMethod
-  public void state(/*final int reactTag, */final Promise promise) {
+  public void state(final int reactTag, final Promise promise) {
     try {
-//      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
-//      uiManager.addUIBlock(new UIBlock() {
-//        public void execute (NativeViewHierarchyManager nvhm) {
-//          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
-//          //RNJWPlayerViewManager playerViewManager = (RNJWPlayerViewManager) nvhm.resolveViewManager(reactTag);
-//
-//          PlayerState playerState = playerView.getState();
-//          promise.resolve(stateToInt(playerState));
-//        }
-//      });
-      PlayerState playerState = RNJWPlayerViewManager.mPlayerView.getState();
-      promise.resolve(stateToInt(playerState));
+      UIManagerModule uiManager = mReactContext.getNativeModule(UIManagerModule.class);
+      uiManager.addUIBlock(new UIBlock() {
+        public void execute (NativeViewHierarchyManager nvhm) {
+          RNJWPlayerView playerView = (RNJWPlayerView) nvhm.resolveView(reactTag);
+
+          if (playerView != null) {
+            PlayerState playerState = playerView.getState();
+            promise.resolve(stateToInt(playerState));
+          } else {
+            promise.reject("RNJW Error", "Player is null");
+          }
+        }
+      });
     } catch (IllegalViewOperationException e) {
       promise.reject("RNJW Error", e);
     }

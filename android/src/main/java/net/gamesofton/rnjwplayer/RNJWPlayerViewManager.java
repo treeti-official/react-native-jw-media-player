@@ -1,88 +1,28 @@
 
 package net.gamesofton.rnjwplayer;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.pm.ActivityInfo;
-import android.media.AudioManager;
-import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.util.Log;
+import androidx.annotation.Nullable;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
-import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.longtailvideo.jwplayer.configuration.PlayerConfig;
 import com.longtailvideo.jwplayer.configuration.SkinConfig;
-import com.longtailvideo.jwplayer.events.AudioTrackChangedEvent;
-import com.longtailvideo.jwplayer.events.AudioTracksEvent;
-import com.longtailvideo.jwplayer.events.BeforeCompleteEvent;
-import com.longtailvideo.jwplayer.events.BeforePlayEvent;
-import com.longtailvideo.jwplayer.events.BufferEvent;
-import com.longtailvideo.jwplayer.events.CompleteEvent;
-import com.longtailvideo.jwplayer.events.ControlBarVisibilityEvent;
-import com.longtailvideo.jwplayer.events.ControlsEvent;
-import com.longtailvideo.jwplayer.events.DisplayClickEvent;
-import com.longtailvideo.jwplayer.events.ErrorEvent;
-import com.longtailvideo.jwplayer.events.FullscreenEvent;
-import com.longtailvideo.jwplayer.events.IdleEvent;
-import com.longtailvideo.jwplayer.events.PauseEvent;
-import com.longtailvideo.jwplayer.events.PlayEvent;
-import com.longtailvideo.jwplayer.events.PlaylistCompleteEvent;
-import com.longtailvideo.jwplayer.events.PlaylistEvent;
-import com.longtailvideo.jwplayer.events.PlaylistItemEvent;
-import com.longtailvideo.jwplayer.events.ReadyEvent;
-import com.longtailvideo.jwplayer.events.SetupErrorEvent;
-import com.longtailvideo.jwplayer.events.TimeEvent;
-import com.longtailvideo.jwplayer.events.listeners.AdvertisingEvents;
-import com.longtailvideo.jwplayer.events.listeners.VideoPlayerEvents;
-import com.longtailvideo.jwplayer.fullscreen.FullscreenHandler;
 import com.longtailvideo.jwplayer.media.playlists.PlaylistItem;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.longtailvideo.jwplayer.configuration.PlayerConfig.STRETCHING_UNIFORM;
 
-public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> implements VideoPlayerEvents.OnFullscreenListener,
-        VideoPlayerEvents.OnReadyListener,
-        VideoPlayerEvents.OnPlayListener,
-        VideoPlayerEvents.OnPauseListener,
-        VideoPlayerEvents.OnCompleteListener,
-        VideoPlayerEvents.OnIdleListener,
-        VideoPlayerEvents.OnErrorListener,
-        VideoPlayerEvents.OnSetupErrorListener,
-        VideoPlayerEvents.OnBufferListener,
-        VideoPlayerEvents.OnTimeListener,
-        VideoPlayerEvents.OnPlaylistListener,
-        VideoPlayerEvents.OnPlaylistItemListener,
-        VideoPlayerEvents.OnPlaylistCompleteListener,
-        VideoPlayerEvents.OnAudioTracksListener,
-        VideoPlayerEvents.OnAudioTrackChangedListener,
-        VideoPlayerEvents.OnControlsListener,
-        VideoPlayerEvents.OnControlBarVisibilityListener,
-        VideoPlayerEvents.OnDisplayClickListener,
-        AdvertisingEvents.OnBeforePlayListener,
-        AdvertisingEvents.OnBeforeCompleteListener,
-        AudioManager.OnAudioFocusChangeListener {
+public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> {
 
   public static final String REACT_CLASS = "RNJWPlayer";
 
@@ -90,18 +30,7 @@ public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> imp
   public static final int COMMAND_PAUSE = 102;
   public static final int COMMAND_STOP = 103;
   public static final int COMMAND_TOGGLE_SPEED = 104;
-  public static  String type="";
 
-  /**
-   * The application window
-   */
-  Window mWindow;
-
-  Activity mActivity;
-
-  private static PlayerConfig mPlayerConfig = null;
-  private ThemedReactContext mContext;
-  public static RNJWPlayerView mPlayerView = null;
 //  PlaylistItem mPlayListItem = null;
   List<PlaylistItem> mPlayList = null;
 
@@ -122,14 +51,10 @@ public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> imp
 
   ReadableMap playlistItem; // PlaylistItem
   ReadableArray playlist; // List <PlaylistItem>
-  String playlistId;
-  String comparePlaylistId;
-  Number currentPlayingIndex;
 
   private static final String TAG = "RNJWPlayerViewManager";
-  private Handler mHandler;
-  public static AudioManager audioManager;
 
+  private final ReactApplicationContext mAppContext;
 
   @Override
   public String getName() {
@@ -138,17 +63,13 @@ public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> imp
     return REACT_CLASS;
   }
 
+  public RNJWPlayerViewManager(ReactApplicationContext context) {
+    mAppContext = context;
+  }
+
   @Override
   public RNJWPlayerView createViewInstance(ThemedReactContext context) {
-
-    mContext = context;
-
-    mActivity = mContext.getCurrentActivity();
-    if (mActivity != null) {
-      mWindow = mActivity.getWindow();
-    }
-
-    mPlayerConfig = new PlayerConfig.Builder()
+    PlayerConfig playerConfig = new PlayerConfig.Builder()
             .skinConfig(new SkinConfig.Builder().build())
             .repeat(false)
             .controls(true)
@@ -159,107 +80,7 @@ public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> imp
             .stretching(STRETCHING_UNIFORM)
             .build();
 
-    mPlayerView = new RNJWPlayerView(mContext.getBaseContext(), mPlayerConfig);
-    audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-    mPlayerView.addOnReadyListener(this);
-    mPlayerView.addOnPlayListener(this);
-    mPlayerView.addOnPauseListener(this);
-    mPlayerView.addOnCompleteListener(this);
-    mPlayerView.addOnIdleListener(this);
-    mPlayerView.addOnErrorListener(this);
-    mPlayerView.addOnSetupErrorListener(this);
-    mPlayerView.addOnBufferListener(this);
-    mPlayerView.addOnTimeListener(this);
-    mPlayerView.addOnPlaylistListener(this);
-    mPlayerView.addOnPlaylistItemListener(this);
-    mPlayerView.addOnPlaylistCompleteListener(this);
-    //mPlayerView.addOnBeforePlayListener(this);
-    //mPlayerView.addOnBeforeCompleteListener(this);
-    mPlayerView.addOnControlsListener(this);
-    mPlayerView.addOnControlBarVisibilityListener(this);
-    mPlayerView.addOnDisplayClickListener(this);
-    mPlayerView.addOnFullscreenListener(this);
-    mPlayerView.setFullscreenHandler(new FullscreenHandler() {
-      @Override
-      public void onFullscreenRequested() {
-        WritableMap eventEnterFullscreen = Arguments.createMap();
-        eventEnterFullscreen.putString("message", "onFullscreen");
-        ReactContext reactContext = (ReactContext) mContext;
-        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                mPlayerView.getId(),
-                "topFullScreen",
-                eventEnterFullscreen);
-      }
-
-      @Override
-      public void onFullscreenExitRequested() {
-        WritableMap eventExitFullscreen = Arguments.createMap();
-        eventExitFullscreen.putString("message", "onFullscreenExit");
-        ReactContext reactContext = (ReactContext) mContext;
-        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                mPlayerView.getId(),
-                "topFullScreenExit",
-                eventExitFullscreen);
-      }
-
-      @Override
-      public void onResume() {
-
-      }
-
-      @Override
-      public void onPause() {
-
-      }
-
-      @Override
-      public void onDestroy() {
-
-      }
-
-      @Override
-      public void onAllowRotationChanged(boolean b) {
-        Log.e(TAG, "onAllowRotationChanged: "+b );
-      }
-
-      @Override
-      public void updateLayoutParams(ViewGroup.LayoutParams layoutParams) {
-
-      }
-
-      @Override
-      public void setUseFullscreenLayoutFlags(boolean b) {
-
-      }
-    });
-
-    mPlayerView.setControls(true);
-
-    return mPlayerView;
-  }
-
-  public void setCustomStyle(String name) {
-    SkinConfig skinConfig = new SkinConfig.Builder()
-            .name(name)
-            .url(String.format("file:///android_asset/%s.css", name))
-            .build();
-
-    PlayerConfig config = mPlayerView.getConfig();
-    config.setSkinConfig(skinConfig);
-
-    mPlayerView.setup(config);
-  }
-
-  private void updateWakeLock(boolean enable) {
-    if (mWindow != null) {
-      if (enable) {
-        mWindow.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-      } else {
-        mWindow.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-      }
-    }
+    return new RNJWPlayerView(context, mAppContext, playerConfig);
   }
 
   @ReactProp(name = "file")
@@ -298,99 +119,92 @@ public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> imp
   }
 
   @ReactProp(name = "displayTitle")
-  public void setDisplayTitle(View view, Boolean prop) {
+  public void setDisplayTitle(RNJWPlayerView view, Boolean prop) {
     if(displayTitle!=prop) {
       displayTitle = prop;
 
-      mPlayerView.getConfig().setDisplayTitle(displayTitle);
+      view.getConfig().setDisplayTitle(displayTitle);
     }
   }
 
   @ReactProp(name = "displayDesc")
-  public void setDisplayDescription(View view, Boolean prop) {
+  public void setDisplayDescription(RNJWPlayerView view, Boolean prop) {
     if(displayDesc!=prop) {
       displayDesc = prop;
 
-      mPlayerView.getConfig().setDisplayDescription(displayDesc);
+      view.getConfig().setDisplayDescription(displayDesc);
     }
   }
 
   @ReactProp(name = "autostart")
-  public void setAutostart(View view, Boolean prop) {
+  public void setAutostart(RNJWPlayerView view, Boolean prop) {
     if(autostart!=prop) {
       autostart = prop;
 
-      mPlayerView.getConfig().setAutostart(autostart);
+      view.getConfig().setAutostart(autostart);
     }
   }
 
   @ReactProp(name = "controls")
-  public void setControls(View view, Boolean prop) {
+  public void setControls(RNJWPlayerView view, Boolean prop) {
     if(controls!=prop) {
       controls = prop;
 
-      mPlayerView.getConfig().setControls(controls);
-      mPlayerView.setControls(controls);
+      view.getConfig().setControls(controls);
+      view.setControls(controls);
     }
   }
 
   @ReactProp(name = "repeat")
-  public void setRepeat(View view, Boolean prop) {
+  public void setRepeat(RNJWPlayerView view, Boolean prop) {
     if(repeat!=prop) {
       repeat = prop;
 
-      mPlayerView.getConfig().setRepeat(repeat);
+      view.getConfig().setRepeat(repeat);
     }
   }
 
   @ReactProp(name = "colors")
-  public void setColors(View view, ReadableMap prop) {
+  public void setColors(RNJWPlayerView view, ReadableMap prop) {
     if (prop != null) {
       if (prop.hasKey("icons")) {
-        mPlayerConfig.getSkinConfig().setControlBarIcons("#" + prop.getString("icons"));
+        view.getConfig().getSkinConfig().setControlBarIcons("#" + prop.getString("icons"));
       }
 
       if (prop.hasKey("timeslider")) {
         ReadableMap timeslider = prop.getMap("timeslider");
 
         if (timeslider.hasKey("progress")) {
-          mPlayerConfig.getSkinConfig().setTimeSliderProgress("#" + timeslider.getString("progress"));
+          view.getConfig().getSkinConfig().setTimeSliderProgress("#" + timeslider.getString("progress"));
         }
 
         if (timeslider.hasKey("rail")) {
-          mPlayerConfig.getSkinConfig().setTimeSliderRail("#" + timeslider.getString("rail"));
+          view.getConfig().getSkinConfig().setTimeSliderRail("#" + timeslider.getString("rail"));
         }
       }
 
-      mPlayerView.setup(mPlayerConfig);
+      view.setup(view.getConfig());
     }
   }
 
   @ReactProp(name = "playerStyle")
-  public void setPlayerStyle(View view, String prop) {
+  public void setPlayerStyle(RNJWPlayerView view, String prop) {
     if (prop != null) {
-      setCustomStyle(prop);
+      view.setCustomStyle(prop);
     }
   }
 
   @ReactProp(name = "nextUpDisplay")
-  public void setNextUpDisplay(View view, Boolean prop) {
+  public void setNextUpDisplay(RNJWPlayerView view, Boolean prop) {
     if(nextUpDisplay!=prop) {
       nextUpDisplay = prop;
 
-      mPlayerView.getConfig().setNextUpDisplay(nextUpDisplay);
-    }
-  }
-
-  @ReactProp(name = "playlistId")
-  public void setPlaylistId(View view, String prop) {
-    if (playlistId!=prop) {
-      playlistId = prop;
+      view.getConfig().setNextUpDisplay(nextUpDisplay);
     }
   }
 
   @ReactProp(name = "playlistItem")
-  public void setPlaylistItem(View view, ReadableMap prop) {
+  public void setPlaylistItem(RNJWPlayerView view, ReadableMap prop) {
     if(playlistItem != prop) {
       playlistItem = prop;
 
@@ -398,9 +212,7 @@ public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> imp
         if (playlistItem.hasKey("file")) {
           String newFile = playlistItem.getString("file");
 
-          if (mPlayerView.getPlaylistItem() == null) {
-
-            resetPlaylist();
+          if (view.getPlaylistItem() == null) {
 
             PlaylistItem newPlayListItem = new PlaylistItem();
 
@@ -423,42 +235,24 @@ public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> imp
             }
 
             if (playlistItem.hasKey("autostart")) {
-              mPlayerView.getConfig().setAutostart(playlistItem.getBoolean("autostart"));
+              view.getConfig().setAutostart(playlistItem.getBoolean("autostart"));
             }
 
             if (playlistItem.hasKey("playerStyle")) {
-              setCustomStyle(playlistItem.getString("playerStyle"));
+              view.setCustomStyle(playlistItem.getString("playerStyle"));
             }
 
-            mPlayerView.load(newPlayListItem);
+            view.load(newPlayListItem);
           } else {
-            mPlayerView.play();
+            view.play();
           }
         }
       }
     }
   }
 
-  public void reset()
-  {
-    mPlayerView = null;
-    mPlayerConfig = null;
-  }
-
-  public void resetPlaylistItem()
-  {
-    playlistItem = null;
-  }
-
-  public void resetPlaylist()
-  {
-    playlist = null;
-    playlistId = null;
-    comparePlaylistId = null;
-  }
-
   @ReactProp(name = "playlist")
-  public void setPlaylist(View view, ReadableArray prop) {
+  public void setPlaylist(RNJWPlayerView view, ReadableArray prop) {
     if(playlist != prop) {
       playlist = prop;
 
@@ -492,7 +286,7 @@ public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> imp
             }
 
             if (playlistItem.hasKey("autostart")) {
-              mPlayerView.getConfig().setAutostart(playlistItem.getBoolean("autostart"));
+              view.getConfig().setAutostart(playlistItem.getBoolean("autostart"));
             }
 
             PlaylistItem newPlayListItem = new PlaylistItem.Builder()
@@ -510,231 +304,13 @@ public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> imp
         }
 
         if (playlist.getMap(0).hasKey("playerStyle")) {
-          setCustomStyle(playlist.getMap(0).getString("playerStyle"));
+          view.setCustomStyle(playlist.getMap(0).getString("playerStyle"));
         }
 
-        mPlayerView.load(mPlayList);
-        mPlayerView.play();
+        view.load(mPlayList);
+        view.play();
       }
     }
-  }
-
-  private Runnable mDelayedStopRunnable = new Runnable() {
-    @Override
-    public void run() {
-      mPlayerView.stop();
-    }
-  };
-
-  @Override
-  public void onDisplayClick(DisplayClickEvent displayClickEvent) {
-
-  }
-
-  @Override
-  public void onAudioTracks(AudioTracksEvent audioTracksEvent) {
-
-  }
-
-  @Override
-  public void onAudioTrackChanged(AudioTrackChangedEvent audioTrackChangedEvent) {
-
-  }
-
-  @Override
-  public void onBeforePlay(BeforePlayEvent beforePlayEvent) {
-
-  }
-
-
-  @Override
-  public void onBeforeComplete(BeforeCompleteEvent beforeCompleteEvent) {
-
-  }
-
-  @Override
-  public void onIdle(IdleEvent idleEvent) {
-
-  }
-
-  @Override
-  public void onPlaylist(PlaylistEvent playlistEvent) {
-
-  }
-
-  @Override
-  public void onPlaylistItem(PlaylistItemEvent playlistItemEvent) {
-    WritableMap event = Arguments.createMap();
-    event.putString("message", "onPlaylistItem");
-    event.putInt("index",playlistItemEvent.getIndex());
-
-    currentPlayingIndex = playlistItemEvent.getIndex();
-
-    event.putString("playlistItem",playlistItemEvent.getPlaylistItem().toJson().toString());
-    Log.i("playlistItem", playlistItemEvent.getPlaylistItem().toJson().toString());
-
-    try {
-      JSONObject jObj = new JSONObject(playlistItemEvent.getPlaylistItem().toJson().toString());
-      JSONArray array = jObj.getJSONArray("sources");
-      jObj = new JSONObject(String.valueOf(array.get(0)));
-      type = jObj.getString("type");
-      Log.e(TAG, "onPlaylistItem: TYPE : " + type);
-
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
-    ReactContext reactContext = (ReactContext) mContext;
-    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            mPlayerView.getId(),
-            "topPlaylistItem",
-            event);
-
-  }
-
-  @Override
-  public void onPlaylistComplete(PlaylistCompleteEvent playlistCompleteEvent) {
-
-  }
-
-  @Override
-  public void onBuffer(BufferEvent bufferEvent) {
-    WritableMap event = Arguments.createMap();
-    event.putString("message", "onBuffer");
-    ReactContext reactContext = (ReactContext) mContext;
-    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            mPlayerView.getId(),
-            "topBuffer",
-            event);
-
-    updateWakeLock(true);
-  }
-
-  @Override
-  public void onPlay(PlayEvent playEvent) {
-    int result = 0;
-    if (audioManager != null) {
-      result = audioManager.requestAudioFocus(this,
-              // Use the music stream.
-              AudioManager.STREAM_MUSIC,
-              // Request permanent focus.
-              AudioManager.AUDIOFOCUS_GAIN);
-    }
-    if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-      Log.e(TAG, "onBeforePlay: " + result);
-    }
-
-
-    WritableMap event = Arguments.createMap();
-    event.putString("message", "onPlay");
-    ReactContext reactContext = (ReactContext) mContext;
-    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            mPlayerView.getId(),
-            "topPlay",
-            event);
-
-    updateWakeLock(true);
-  }
-
-  @Override
-  public void onReady(ReadyEvent readyEvent) {
-    Log.e(TAG, "onReady triggered");
-    WritableMap event = Arguments.createMap();
-    event.putString("message", "onPlayerReady");
-    ReactContext reactContext = (ReactContext) mContext;
-    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            mPlayerView.getId(),
-            "topOnPlayerReady",
-            event);
-
-    updateWakeLock(true);
-  }
-
-  @Override
-  public void onPause(PauseEvent pauseEvent) {
-    WritableMap event = Arguments.createMap();
-    event.putString("message", "onPause");
-    ReactContext reactContext = (ReactContext) mContext;
-    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            mPlayerView.getId(),
-            "topPause",
-            event);
-
-    updateWakeLock(false);
-  }
-
-  @Override
-  public void onComplete(CompleteEvent completeEvent) {
-    WritableMap event = Arguments.createMap();
-    event.putString("message", "onComplete");
-    ReactContext reactContext = (ReactContext) mContext;
-    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            mPlayerView.getId(),
-            "topComplete",
-            event);
-
-    updateWakeLock(false);
-  }
-
-  @Override
-  public void onFullscreen(FullscreenEvent fullscreenEvent) {
-
-  }
-
-  @Override
-  public void onError(ErrorEvent errorEvent) {
-    WritableMap event = Arguments.createMap();
-    event.putString("message", "onError");
-    event.putString("error",errorEvent.getException().toString());
-    ReactContext reactContext = (ReactContext) mContext;
-    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            mPlayerView.getId(),
-            "topPlayerError",
-            event);
-
-    updateWakeLock(false);
-  }
-
-  @Override
-  public void onSetupError(SetupErrorEvent setupErrorEvent) {
-    WritableMap event = Arguments.createMap();
-    event.putString("message", "onSetupError");
-    ReactContext reactContext = (ReactContext) mContext;
-    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            mPlayerView.getId(),
-            "topSetupPlayerError",
-            event);
-
-    updateWakeLock(false);
-  }
-
-  @Override
-  public void onTime(TimeEvent timeEvent) {
-    WritableMap event = Arguments.createMap();
-    event.putString("message", "onTime");
-    ReactContext reactContext = (ReactContext) mContext;
-    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            mPlayerView.getId(),
-            "topTime",
-            event);
-  }
-
-  @Override
-  public void onControls(ControlsEvent controlsEvent) {
-
-  }
-
-  @Override
-  public void onControlBarVisibilityChanged(ControlBarVisibilityEvent controlBarVisibilityEvent) {
-    WritableMap event = Arguments.createMap();
-    event.putString("message", "onControlBarVisible");
-    event.putBoolean("controls", controlBarVisibilityEvent.isVisible());
-    ReactContext reactContext = (ReactContext) mContext;
-    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            mPlayerView.getId(),
-            "topControlBarVisible",
-            event);
-
-    updateWakeLock(true);
   }
 
   public Map getExportedCustomBubblingEventTypeConstants() {
@@ -852,30 +428,6 @@ public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> imp
       root.setPlaybackRate(rate += 0.5);
     } else {
       root.setPlaybackRate((float) 0.5);
-    }
-  }
-
-  @Override
-  public void onAudioFocusChange(int i) {
-    mHandler = new Handler();
-
-    switch (i) {
-      case AudioManager.AUDIOFOCUS_LOSS:
-        mPlayerView.pause();
-        mHandler.postDelayed(mDelayedStopRunnable, TimeUnit.SECONDS.toMillis(30));
-        break;
-      case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-        mPlayerView.pause();
-        break;
-      case AudioManager.AUDIOFOCUS_GAIN:
-        Boolean autostart = mPlayerView.getConfig().getAutostart();
-        if (autostart) {
-          mPlayerView.play();
-        }
-        break;
-      case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-        // Lower the volume, keep playing
-        break;
     }
   }
 }
