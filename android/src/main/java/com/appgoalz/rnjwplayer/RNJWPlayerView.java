@@ -736,7 +736,11 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     @Override
     public void onBeforeComplete(BeforeCompleteEvent beforeCompleteEvent) {
+        WritableMap event = Arguments.createMap();
+        event.putString("message", "onBeforeComplete");
+        getReactContext().getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "topBeforeComplete", event);
 
+        updateWakeLock(false);
     }
 
     @Override
@@ -770,7 +774,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     @Override
     public void onPlaylistComplete(PlaylistCompleteEvent playlistCompleteEvent) {
-
+        mPlayer.setFullscreen(false, false);
     }
 
     @Override
@@ -875,7 +879,11 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     @Override
     public void onFullscreen(FullscreenEvent fullscreenEvent) {
-
+        if (!fullscreenEvent.getFullscreen()) {
+            WritableMap event = Arguments.createMap();
+            event.putString("message", "onFullScreenExit");
+            getReactContext().getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "topFullScreenExit", event);
+        }
     }
 
     @Override
