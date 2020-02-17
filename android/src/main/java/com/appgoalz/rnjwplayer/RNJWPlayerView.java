@@ -520,7 +520,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                         }
 
                         mPlayer.load(newPlayListItem);
-                        mPlayer.setFullscreen(true, true);
 
                         if (autostart) {
                             mPlayer.play();

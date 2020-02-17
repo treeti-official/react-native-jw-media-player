@@ -153,6 +153,10 @@ export default class JWPlayer extends Component {
     if (RNJWPlayerManager) RNJWPlayerManager.seekTo(this.getRNJWPlayerBridgeHandle(), time);
   }
 
+  setFullscreen(fullscreen) {
+    if (RNJWPlayerManager) RNJWPlayerManager.setFullscreen(this.getRNJWPlayerBridgeHandle(), fullscreen);
+  }
+
   async position() {
     if (RNJWPlayerManager) {
       try {
