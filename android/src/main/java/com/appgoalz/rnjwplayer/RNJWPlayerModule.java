@@ -145,6 +145,10 @@ public class RNJWPlayerModule extends ReactContextBaseJavaModule {
             playerView.mPlayer.stop();
             playerView.resumeOnFocusGain = false;
           }
+
+          if (playerView.mPlayer.getFullscreen()) {
+            playerView.mPlayer.setFullscreen(false, false);
+          }
         }
       });
     } catch (IllegalViewOperationException e) {
