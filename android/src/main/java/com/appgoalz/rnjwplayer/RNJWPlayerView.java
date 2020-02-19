@@ -776,7 +776,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     @Override
     public void onPlaylistComplete(PlaylistCompleteEvent playlistCompleteEvent) {
-        mPlayer.setFullscreen(false, false);
     }
 
     @Override
