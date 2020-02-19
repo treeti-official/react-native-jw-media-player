@@ -110,7 +110,8 @@ export default class JWPlayer extends Component {
     onFullScreen: PropTypes.func,
     onPlaylistItem: PropTypes.func,
     onControlBarVisible: PropTypes.func,
-    onAdPlay: PropTypes.func
+    onAdPlay: PropTypes.func,
+    setFullscreen: PropTypes.func
   };
 
   pause() {
