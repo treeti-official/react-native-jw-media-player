@@ -563,8 +563,6 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     if (nextUpOffset != nil) {
         self.player.config.nextupOffset = [nextUpOffset intValue];
     }
-    
-//    NSLog(@"MEGA MEFA %@", nextUpOffset);
 
     if (self.onPlaylistItem) {
         NSError *error;
