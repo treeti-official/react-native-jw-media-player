@@ -325,6 +325,11 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
         @Override
         public void onFullscreenRequested() {
+            // prevent a race condition from occurring when the player is initialized
+            // and the android back button is pressed immediately after
+            // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
+            // which would cause the app to crash
+            // see https://nuuvuu.atlassian.net/browse/FSB-1466
             if (hasRequestedExitFullscreen) {
                 hasRequestedExitFullscreen = false;
                 return;
@@ -371,9 +376,11 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
         @Override
         public void onFullscreenExitRequested() {
-            // Enter portrait mode
-            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
+            // prevent a race condition from occurring when the player is initialized
+            // and the android back button is pressed immediately after
+            // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
+            // which would cause the app to crash
+            // see https://nuuvuu.atlassian.net/browse/FSB-1466
             hasRequestedExitFullscreen = true;
             if (!isFullscreen) {
                 return;
@@ -383,6 +390,9 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             mDecorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
             );
+
+            // Enter portrait mode
+            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
             // Destroy the surface that is used for video output, we need to do this before
             // we can detach the JWPlayerView from a ViewGroup.
