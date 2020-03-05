@@ -779,11 +779,14 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             doBindService();
         }
 
-        int currentPlayingIndex = playlistItemEvent.getIndex();
-        ReadableMap playlistItem = playlist.getMap(currentPlayingIndex);
 
-        if (playlistItem.hasKey("nextUpOffset")) {
-            mPlayer.getConfig().setNextUpOffset(playlistItem.getInt("nextUpOffset"));
+        if (playlist != null) {
+            int currentPlayingIndex = playlistItemEvent.getIndex();
+            ReadableMap playlistItem = playlist.getMap(currentPlayingIndex);
+
+            if (playlistItem.hasKey("nextUpOffset")) {
+                mPlayer.getConfig().setNextUpOffset(playlistItem.getInt("nextUpOffset"));
+            }
         }
 
         WritableMap event = Arguments.createMap();
