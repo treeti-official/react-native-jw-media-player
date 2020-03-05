@@ -63,7 +63,7 @@ import com.longtailvideo.jwplayer.events.listeners.AdvertisingEvents;
 import com.longtailvideo.jwplayer.events.listeners.VideoPlayerEvents;
 import com.longtailvideo.jwplayer.fullscreen.FullscreenHandler;
 import com.longtailvideo.jwplayer.media.playlists.PlaylistItem;
-import com.longtailvideo.jwplayer.media.ads.AdBreak;	
+import com.longtailvideo.jwplayer.media.ads.AdBreak;
 import com.longtailvideo.jwplayer.media.ads.AdSource;
 
 import java.util.ArrayList;
@@ -315,6 +315,8 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
         private ViewGroup mPlayerContainer;
         private final RNJWPlayer mPlayer;
         private View mDecorView;
+        private boolean isFullscreen = false;
+        private boolean hasRequestedExitFullscreen = false;
 
         public AppViewFullscreenHandler(RNJWPlayer player) {
             mPlayerContainer = (ViewGroup) player.getParent();
@@ -323,6 +325,12 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
         @Override
         public void onFullscreenRequested() {
+            if (hasRequestedExitFullscreen) {
+                hasRequestedExitFullscreen = false;
+                return;
+            }
+            isFullscreen = true;
+
             mDecorView = mActivity.getWindow().getDecorView();
 
             // Hide system ui
@@ -363,12 +371,18 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
         @Override
         public void onFullscreenExitRequested() {
+            // Enter portrait mode
+            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+            hasRequestedExitFullscreen = true;
+            if (!isFullscreen) {
+                return;
+            }
+            isFullscreen = false;
+
             mDecorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
             );
-
-            // Enter portrait mode
-            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
             // Destroy the surface that is used for video output, we need to do this before
             // we can detach the JWPlayerView from a ViewGroup.
@@ -475,22 +489,22 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                             autostart = playlistItem.getBoolean("autostart");
                         }
 
-                        if (playlistItem.hasKey("schedule")) {	
-                            ReadableArray ad = playlistItem.getArray("schedule");	
+                        if (playlistItem.hasKey("schedule")) {
+                            ReadableArray ad = playlistItem.getArray("schedule");
 
-                            List<AdBreak> adSchedule = new ArrayList();	
+                            List<AdBreak> adSchedule = new ArrayList();
 
-                            for (int i = 0; i < ad.size(); i++) {	
-                                ReadableMap adBreakProp = ad.getMap(i);	
-                                String offset = adBreakProp.getString("offset");	
-                                if (adBreakProp.hasKey("tag")) {	
-                                    AdBreak adBreak = new AdBreak(offset, AdSource.IMA, adBreakProp.getString("tag"));	
-                                    adSchedule.add(adBreak);	
-                                }	
-                            }	
+                            for (int i = 0; i < ad.size(); i++) {
+                                ReadableMap adBreakProp = ad.getMap(i);
+                                String offset = adBreakProp.getString("offset");
+                                if (adBreakProp.hasKey("tag")) {
+                                    AdBreak adBreak = new AdBreak(offset, AdSource.IMA, adBreakProp.getString("tag"));
+                                    adSchedule.add(adBreak);
+                                }
+                            }
 
-                            newPlayListItem.setAdSchedule(adSchedule);	
-                        }	
+                            newPlayListItem.setAdSchedule(adSchedule);
+                        }
 
                         PlayerConfig playerConfig = new PlayerConfig.Builder()
                                 .skinConfig(skinConfig)
@@ -526,7 +540,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
                         mPlayer.load(newPlayListItem);
                         mPlayer.setFullscreen(true, true);
-                        
+
                         if (autostart) {
                             mPlayer.play();
                         }
@@ -574,19 +588,19 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                             mediaId = playlistItem.getString("mediaId");
                         }
 
-                        List<AdBreak> adSchedule = new ArrayList();	
+                        List<AdBreak> adSchedule = new ArrayList();
 
-                        if (playlistItem.hasKey("advertisement")) {	
-                            ReadableArray ad = playlistItem.getArray("advertisement");	
+                        if (playlistItem.hasKey("advertisement")) {
+                            ReadableArray ad = playlistItem.getArray("advertisement");
 
-                            for (int i = 0; i < ad.size(); i++) {	
-                                ReadableMap adBreakProp = ad.getMap(i);	
-                                String offset = adBreakProp.hasKey("offset") ? adBreakProp.getString("offset") : "pre";	
-                                if (adBreakProp.hasKey("tag")) {	
-                                    AdBreak adBreak = new AdBreak(offset, AdSource.IMA, adBreakProp.getString("tag"));	
-                                    adSchedule.add(adBreak);	
-                                }	
-                            }	
+                            for (int i = 0; i < ad.size(); i++) {
+                                ReadableMap adBreakProp = ad.getMap(i);
+                                String offset = adBreakProp.hasKey("offset") ? adBreakProp.getString("offset") : "pre";
+                                if (adBreakProp.hasKey("tag")) {
+                                    AdBreak adBreak = new AdBreak(offset, AdSource.IMA, adBreakProp.getString("tag"));
+                                    adSchedule.add(adBreak);
+                                }
+                            }
                         }
 
                         PlaylistItem newPlayListItem = new PlaylistItem.Builder()
@@ -744,8 +758,8 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     @Override
     public void onBeforePlay(BeforePlayEvent beforePlayEvent) {
-        WritableMap event = Arguments.createMap();	
-        event.putString("message", "onAdPlay");	
+        WritableMap event = Arguments.createMap();
+        event.putString("message", "onAdPlay");
         getReactContext().getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "topAdStarted", event);
     }
 
