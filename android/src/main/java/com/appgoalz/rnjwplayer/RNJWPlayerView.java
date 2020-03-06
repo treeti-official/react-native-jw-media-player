@@ -12,19 +12,12 @@ import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
-import androidx.viewpager.widget.ViewPager;
-import android.text.Layout;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -69,6 +62,7 @@ import com.longtailvideo.jwplayer.media.ads.AdSource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.longtailvideo.jwplayer.configuration.PlayerConfig.STRETCHING_UNIFORM;
 
@@ -114,6 +108,8 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
     Boolean displayTitle = false;
     Boolean displayDesc = false;
     Boolean nextUpDisplay = false;
+
+    private AtomicBoolean isDestroying = new AtomicBoolean(false);
 
     ReadableMap playlistItem; // PlaylistItem
     ReadableArray playlist; // List <PlaylistItem>
@@ -244,6 +240,8 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     public void destroyPlayer() {
         if (mPlayer != null) {
+            isDestroying.set(true);
+
             mPlayer.stop();
 
             mPlayer.removeOnReadyListener(this);
@@ -286,6 +284,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     public void setupPlayerView() {
         if (mPlayer != null) {
+
             mPlayer.addOnReadyListener(this);
             mPlayer.addOnPlayListener(this);
             mPlayer.addOnPauseListener(this);
@@ -315,8 +314,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
         private ViewGroup mPlayerContainer;
         private final RNJWPlayer mPlayer;
         private View mDecorView;
-        private boolean isFullscreen = false;
-        private boolean hasRequestedExitFullscreen = false;
+        private AtomicBoolean isFullscreen = new AtomicBoolean(false);
 
         public AppViewFullscreenHandler(RNJWPlayer player) {
             mPlayerContainer = (ViewGroup) player.getParent();
@@ -330,20 +328,19 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
             // which would cause the app to crash
             // see https://nuuvuu.atlassian.net/browse/FSB-1466
-            if (hasRequestedExitFullscreen) {
-                hasRequestedExitFullscreen = false;
+            if (isFullscreen.get() || isDestroying.get()) {
                 return;
             }
-            isFullscreen = true;
+            isFullscreen.set(true);
 
             mDecorView = mActivity.getWindow().getDecorView();
 
             // Hide system ui
             mDecorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hides bottom bar
-                | View.SYSTEM_UI_FLAG_FULLSCREEN // hides top bar
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY // prevents navigation bar from overriding
-                // exit-full-screen button. Swipe from side to access nav bar.
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hides bottom bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hides top bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY // prevents navigation bar from overriding
+                    // exit-full-screen button. Swipe from side to access nav bar.
             );
 
             // Enter landscape mode for fullscreen videos
@@ -365,9 +362,18 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             mRootView.post(new Runnable() {
                 @Override
                 public void run() {
+                    // prevent a race condition from occurring when the player is initialized
+                    // and the android back button is pressed immediately after
+                    // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
+                    // which would cause the app to crash
+                    // the Runnable is executed in a different thread asynchronously
+                    // see https://nuuvuu.atlassian.net/browse/FSB-1466
+                    if (isDestroying.get()) {
+                        return;
+                    }
                     mRootView.addView(mPlayer, new ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
                     ));
                     mFullscreenPlayer = mPlayer;
                 }
@@ -381,14 +387,13 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
             // which would cause the app to crash
             // see https://nuuvuu.atlassian.net/browse/FSB-1466
-            hasRequestedExitFullscreen = true;
-            if (!isFullscreen) {
+            if (!isFullscreen.get()) {
                 return;
             }
-            isFullscreen = false;
+            isFullscreen.set(false);
 
             mDecorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
+                    View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
             );
 
             // Enter portrait mode
@@ -412,8 +417,8 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                 @Override
                 public void run() {
                     mPlayerContainer.addView(mPlayer, new ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
                     ));
                     mFullscreenPlayer = null;
                 }
@@ -438,14 +443,14 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
         @Override
         public void updateLayoutParams(ViewGroup.LayoutParams layoutParams) {
- //        View.setSystemUiVisibility(int).
- //        Log.e(TAG, "updateLayoutParams: "+layoutParams );
+            //        View.setSystemUiVisibility(int).
+            //        Log.e(TAG, "updateLayoutParams: "+layoutParams );
         }
 
         @Override
         public void setUseFullscreenLayoutFlags(boolean b) {
- //        View.setSystemUiVisibility(int).
- //        Log.e(TAG, "setUseFullscreenLayoutFlags: "+b );
+            //        View.setSystemUiVisibility(int).
+            //        Log.e(TAG, "setUseFullscreenLayoutFlags: "+b );
         }
     }
 
@@ -803,11 +808,14 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             doBindService();
         }
 
-        int currentPlayingIndex = playlistItemEvent.getIndex();
-        ReadableMap playlistItem = playlist.getMap(currentPlayingIndex);
 
-        if (playlistItem.hasKey("nextUpOffset")) {
-            mPlayer.getConfig().setNextUpOffset(playlistItem.getInt("nextUpOffset"));
+        if (playlist != null) {
+            int currentPlayingIndex = playlistItemEvent.getIndex();
+            ReadableMap playlistItem = playlist.getMap(currentPlayingIndex);
+
+            if (playlistItem.hasKey("nextUpOffset")) {
+                mPlayer.getConfig().setNextUpOffset(playlistItem.getInt("nextUpOffset"));
+            }
         }
 
         WritableMap event = Arguments.createMap();
