@@ -284,7 +284,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     public void setupPlayerView() {
         if (mPlayer != null) {
-
             mPlayer.addOnReadyListener(this);
             mPlayer.addOnPlayListener(this);
             mPlayer.addOnPauseListener(this);
@@ -337,10 +336,10 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
             // Hide system ui
             mDecorView.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hides bottom bar
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hides top bar
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY // prevents navigation bar from overriding
-                    // exit-full-screen button. Swipe from side to access nav bar.
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hides bottom bar
+                | View.SYSTEM_UI_FLAG_FULLSCREEN // hides top bar
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY // prevents navigation bar from overriding
+                // exit-full-screen button. Swipe from side to access nav bar.
             );
 
             // Enter landscape mode for fullscreen videos
@@ -372,8 +371,8 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                         return;
                     }
                     mRootView.addView(mPlayer, new ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
                     ));
                     mFullscreenPlayer = mPlayer;
                 }
@@ -393,7 +392,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             isFullscreen.set(false);
 
             mDecorView.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
+                View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
             );
 
             // Enter portrait mode
@@ -417,8 +416,8 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                 @Override
                 public void run() {
                     mPlayerContainer.addView(mPlayer, new ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
                     ));
                     mFullscreenPlayer = null;
                 }
