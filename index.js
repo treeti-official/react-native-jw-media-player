@@ -76,6 +76,7 @@ export default class JWPlayer extends Component {
           offset: PropTypes.string,
         })
       ),
+      nextUpOffset: PropTypes.number
     }),
     playlist: PropTypes.arrayOf(
       PropTypes.shape({
@@ -85,7 +86,8 @@ export default class JWPlayer extends Component {
         desc: PropTypes.string,
         time: PropTypes.number,
         mediaId: PropTypes.string.isRequired,
-        autostart: PropTypes.bool.isRequired
+        autostart: PropTypes.bool.isRequired,
+        nextUpOffset: PropTypes.number
       })
     ),
     onPlayerReady: PropTypes.func,
