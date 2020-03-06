@@ -682,7 +682,9 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
     private void doUnbindService() {
         if (mIsBound) {
             // Detach our existing connection.
-            mActivity.unbindService(mServiceConnection);
+            if(mServiceConnection != null) {
+                mActivity.unbindService(mServiceConnection);
+            }
             mIsBound = false;
         }
     }
