@@ -130,8 +130,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
     boolean playbackNowAuthorized = false;
     boolean resumeOnFocusGain = true;
 
-    private Thread playerInitializing = null;
-
     private final ReactApplicationContext mAppContext;
 
     private ThemedReactContext mThemedReactContext;
@@ -564,8 +562,8 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                 // which would cause the app to crash
                 // the Runnable is executed in a different thread asynchronously
                 // see https://nuuvuu.atlassian.net/browse/FSB-1466
-                playerInitializing = new Thread(runnable);
-                playerInitializing.run();
+                Thread thread = new Thread(runnable);
+                thread.run();
             }
         }
     }
