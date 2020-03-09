@@ -60,9 +60,8 @@ import com.longtailvideo.jwplayer.media.ads.AdBreak;
 import com.longtailvideo.jwplayer.media.ads.AdSource;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CountDownLatch;
 
 import static com.longtailvideo.jwplayer.configuration.PlayerConfig.STRETCHING_UNIFORM;
 
@@ -109,11 +108,10 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
     Boolean displayDesc = false;
     Boolean nextUpDisplay = false;
 
-    private AtomicBoolean isDestroying = new AtomicBoolean(false);
-
     ReadableMap playlistItem; // PlaylistItem
     ReadableArray playlist; // List <PlaylistItem>
     Number currentPlayingIndex;
+    CountDownLatch latch = new CountDownLatch(1);
 
     private static final String TAG = "RNJWPlayerView";
 
@@ -131,6 +129,8 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
     boolean playbackDelayed = false;
     boolean playbackNowAuthorized = false;
     boolean resumeOnFocusGain = true;
+
+    private Thread playerInitializing = null;
 
     private final ReactApplicationContext mAppContext;
 
@@ -239,47 +239,65 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
     }
 
     public void destroyPlayer() {
-        if (mPlayer != null) {
-            isDestroying.set(true);
-
-            mPlayer.stop();
-
-            mPlayer.removeOnReadyListener(this);
-            mPlayer.removeOnPlayListener(this);
-            mPlayer.removeOnPauseListener(this);
-            mPlayer.removeOnCompleteListener(this);
-            mPlayer.removeOnIdleListener(this);
-            mPlayer.removeOnErrorListener(this);
-            mPlayer.removeOnSetupErrorListener(this);
-            mPlayer.removeOnBufferListener(this);
-            mPlayer.removeOnTimeListener(this);
-            mPlayer.removeOnPlaylistListener(this);
-            mPlayer.removeOnPlaylistItemListener(this);
-            mPlayer.removeOnPlaylistCompleteListener(this);
-            mPlayer.removeOnFirstFrameListener(this);
-            mPlayer.removeOnBeforePlayListener(this);
-            mPlayer.removeOnBeforeCompleteListener(this);
-            mPlayer.removeOnControlsListener(this);
-            mPlayer.removeOnControlBarVisibilityListener(this);
-            mPlayer.removeOnDisplayClickListener(this);
-            mPlayer.removeOnFullscreenListener(this);
-
-            mPlayer.onDestroy();
-            mPlayer = null;
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                if (audioManager != null && focusRequest != null) {
-                    audioManager.abandonAudioFocusRequest(focusRequest);
+        final RNJWPlayerView player = this;
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                // prevent a race condition from occurring when the player is initialized
+                // and the android back button is pressed immediately after
+                // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
+                // which would cause the app to crash
+                // the Runnable is executed in a different thread asynchronously
+                // see https://nuuvuu.atlassian.net/browse/FSB-1466
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {
+                    return;
                 }
-            } else {
-                if (audioManager != null) {
-                    audioManager.abandonAudioFocus(this);
+
+                if (mPlayer != null) {
+                    mPlayer.stop();
+
+                    mPlayer.removeOnReadyListener(player);
+                    mPlayer.removeOnPlayListener(player);
+                    mPlayer.removeOnPauseListener(player);
+                    mPlayer.removeOnCompleteListener(player);
+                    mPlayer.removeOnIdleListener(player);
+                    mPlayer.removeOnErrorListener(player);
+                    mPlayer.removeOnSetupErrorListener(player);
+                    mPlayer.removeOnBufferListener(player);
+                    mPlayer.removeOnTimeListener(player);
+                    mPlayer.removeOnPlaylistListener(player);
+                    mPlayer.removeOnPlaylistItemListener(player);
+                    mPlayer.removeOnPlaylistCompleteListener(player);
+                    mPlayer.removeOnFirstFrameListener(player);
+                    mPlayer.removeOnBeforePlayListener(player);
+                    mPlayer.removeOnBeforeCompleteListener(player);
+                    mPlayer.removeOnControlsListener(player);
+                    mPlayer.removeOnControlBarVisibilityListener(player);
+                    mPlayer.removeOnDisplayClickListener(player);
+                    mPlayer.removeOnFullscreenListener(player);
+
+                    mPlayer.onDestroy();
+                    mPlayer = null;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        if (audioManager != null && focusRequest != null) {
+                            audioManager.abandonAudioFocusRequest(focusRequest);
+                        }
+                    } else {
+                        if (audioManager != null) {
+                            audioManager.abandonAudioFocus(player);
+                        }
+                    }
+
+                    audioManager = null;
+                    player.doUnbindService();
                 }
             }
-
-            audioManager = null;
-            doUnbindService();
-        }
+        };
+        Thread thread = new Thread(runnable);
+        thread.run();
     }
 
     public void setupPlayerView() {
@@ -313,27 +331,15 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
         private ViewGroup mPlayerContainer;
         private final RNJWPlayer mPlayer;
         private View mDecorView;
-        private AtomicBoolean isFullscreen = new AtomicBoolean(false);
 
         public AppViewFullscreenHandler(RNJWPlayer player) {
             mPlayerContainer = (ViewGroup) player.getParent();
             mPlayer = player;
+            mDecorView = mActivity.getWindow().getDecorView();
         }
 
         @Override
         public void onFullscreenRequested() {
-            // prevent a race condition from occurring when the player is initialized
-            // and the android back button is pressed immediately after
-            // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
-            // which would cause the app to crash
-            // see https://nuuvuu.atlassian.net/browse/FSB-1466
-            if (isFullscreen.get() || isDestroying.get()) {
-                return;
-            }
-            isFullscreen.set(true);
-
-            mDecorView = mActivity.getWindow().getDecorView();
-
             // Hide system ui
             mDecorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hides bottom bar
@@ -361,15 +367,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             mRootView.post(new Runnable() {
                 @Override
                 public void run() {
-                    // prevent a race condition from occurring when the player is initialized
-                    // and the android back button is pressed immediately after
-                    // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
-                    // which would cause the app to crash
-                    // the Runnable is executed in a different thread asynchronously
-                    // see https://nuuvuu.atlassian.net/browse/FSB-1466
-                    if (isDestroying.get()) {
-                        return;
-                    }
                     mRootView.addView(mPlayer, new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
@@ -381,16 +378,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
         @Override
         public void onFullscreenExitRequested() {
-            // prevent a race condition from occurring when the player is initialized
-            // and the android back button is pressed immediately after
-            // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
-            // which would cause the app to crash
-            // see https://nuuvuu.atlassian.net/browse/FSB-1466
-            if (!isFullscreen.get()) {
-                return;
-            }
-            isFullscreen.set(false);
-
             mDecorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
             );
@@ -432,25 +419,25 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
         @Override
         public void onDestroy() {
-            this.onFullscreenExitRequested();
+            // prevent a race condition from occurring when the player is initialized
+            // and the android back button is pressed immediately after
+            // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
+            // which would cause the app to crash
+            // the Runnable is executed in a different thread asynchronously
+            // see https://nuuvuu.atlassian.net/browse/FSB-1466
+            if (mPlayer.getFullscreen()) {
+                this.onFullscreenExitRequested();
+            }
         }
 
         @Override
-        public void onAllowRotationChanged(boolean b) {
-            Log.e(TAG, "onAllowRotationChanged: " + b);
-        }
+        public void onAllowRotationChanged(boolean b) { }
 
         @Override
-        public void updateLayoutParams(ViewGroup.LayoutParams layoutParams) {
-            //        View.setSystemUiVisibility(int).
-            //        Log.e(TAG, "updateLayoutParams: "+layoutParams );
-        }
+        public void updateLayoutParams(ViewGroup.LayoutParams layoutParams) { }
 
         @Override
-        public void setUseFullscreenLayoutFlags(boolean b) {
-            //        View.setSystemUiVisibility(int).
-            //        Log.e(TAG, "setUseFullscreenLayoutFlags: "+b );
-        }
+        public void setUseFullscreenLayoutFlags(boolean b) { }
     }
 
     public void resetPlaylist() {
@@ -462,109 +449,123 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             playlistItem = prop;
 
             if (playlistItem != null) {
-                if (playlistItem.hasKey("file")) {
-                    String newFile = playlistItem.getString("file");
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (playlistItem.hasKey("file")) {
+                            String newFile = playlistItem.getString("file");
 
-                    if (mPlayer == null || mPlayer.getPlaylistItem() == null) {
-                        resetPlaylist();
+                            if (mPlayer == null || mPlayer.getPlaylistItem() == null) {
+                                resetPlaylist();
 
-                        PlaylistItem newPlayListItem = new PlaylistItem();
+                                PlaylistItem newPlayListItem = new PlaylistItem();
 
-                        newPlayListItem.setFile(newFile);
+                                newPlayListItem.setFile(newFile);
 
-                        if (playlistItem.hasKey("title")) {
-                            newPlayListItem.setTitle(playlistItem.getString("title"));
-                        }
+                                if (playlistItem.hasKey("title")) {
+                                    newPlayListItem.setTitle(playlistItem.getString("title"));
+                                }
 
-                        if (playlistItem.hasKey("desc")) {
-                            newPlayListItem.setDescription(playlistItem.getString("desc"));
-                        }
+                                if (playlistItem.hasKey("desc")) {
+                                    newPlayListItem.setDescription(playlistItem.getString("desc"));
+                                }
 
-                        if (playlistItem.hasKey("image")) {
-                            newPlayListItem.setImage(playlistItem.getString("image"));
-                        }
+                                if (playlistItem.hasKey("image")) {
+                                    newPlayListItem.setImage(playlistItem.getString("image"));
+                                }
 
-                        if (playlistItem.hasKey("mediaId")) {
-                            newPlayListItem.setMediaId(playlistItem.getString("mediaId"));
-                        }
+                                if (playlistItem.hasKey("mediaId")) {
+                                    newPlayListItem.setMediaId(playlistItem.getString("mediaId"));
+                                }
 
-                        SkinConfig skinConfig;
+                                SkinConfig skinConfig;
 
-                        if (playlistItem.hasKey("playerStyle")) {
-                            skinConfig = getCustomSkinConfig(playlistItem.getString("playerStyle"));
-                        } else if (customStyle != null && !customStyle.isEmpty()) {
-                            skinConfig = getCustomSkinConfig(customStyle);
-                        } else {
-                            skinConfig = new SkinConfig.Builder().build();
-                        }
+                                if (playlistItem.hasKey("playerStyle")) {
+                                    skinConfig = getCustomSkinConfig(playlistItem.getString("playerStyle"));
+                                } else if (customStyle != null && !customStyle.isEmpty()) {
+                                    skinConfig = getCustomSkinConfig(customStyle);
+                                } else {
+                                    skinConfig = new SkinConfig.Builder().build();
+                                }
 
-                        boolean autostart = false;
-                        if (playlistItem.hasKey("autostart")) {
-                            autostart = playlistItem.getBoolean("autostart");
-                        }
+                                boolean autostart = false;
+                                if (playlistItem.hasKey("autostart")) {
+                                    autostart = playlistItem.getBoolean("autostart");
+                                }
 
-                        if (playlistItem.hasKey("schedule")) {
-                            ReadableArray ad = playlistItem.getArray("schedule");
+                                if (playlistItem.hasKey("schedule")) {
+                                    ReadableArray ad = playlistItem.getArray("schedule");
 
-                            List<AdBreak> adSchedule = new ArrayList();
+                                    List<AdBreak> adSchedule = new ArrayList();
 
-                            for (int i = 0; i < ad.size(); i++) {
-                                ReadableMap adBreakProp = ad.getMap(i);
-                                String offset = adBreakProp.getString("offset");
-                                if (adBreakProp.hasKey("tag")) {
-                                    AdBreak adBreak = new AdBreak(offset, AdSource.IMA, adBreakProp.getString("tag"));
-                                    adSchedule.add(adBreak);
+                                    for (int i = 0; i < ad.size(); i++) {
+                                        ReadableMap adBreakProp = ad.getMap(i);
+                                        String offset = adBreakProp.getString("offset");
+                                        if (adBreakProp.hasKey("tag")) {
+                                            AdBreak adBreak = new AdBreak(offset, AdSource.IMA, adBreakProp.getString("tag"));
+                                            adSchedule.add(adBreak);
+                                        }
+                                    }
+
+                                    newPlayListItem.setAdSchedule(adSchedule);
+                                }
+
+                                PlayerConfig playerConfig = new PlayerConfig.Builder()
+                                        .skinConfig(skinConfig)
+                                        .repeat(false)
+                                        .controls(true)
+                                        .autostart(autostart)
+                                        .displayTitle(true)
+                                        .displayDescription(true)
+                                        .nextUpDisplay(true)
+                                        .stretching(STRETCHING_UNIFORM)
+                                        .build();
+
+                                Context simpleContext = getNonBuggyContext(getReactContext(), getAppContext());
+
+                                mPlayer = new RNJWPlayer(simpleContext, playerConfig);
+                                setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
+                                mPlayer.setLayoutParams(new LinearLayout.LayoutParams(
+                                        LinearLayout.LayoutParams.MATCH_PARENT,
+                                        LinearLayout.LayoutParams.MATCH_PARENT));
+                                addView(mPlayer);
+
+                                setupPlayerView();
+
+                                NotificationManager notificationManager = (NotificationManager)mActivity.getSystemService(Context.NOTIFICATION_SERVICE);
+                                mNotificationWrapper = new NotificationWrapper(notificationManager);
+                                mMediaSessionManager = new MediaSessionManager(simpleContext,
+                                        mPlayer,
+                                        mNotificationWrapper);
+
+                                if (playlistItem.hasKey("autostart")) {
+                                    mPlayer.getConfig().setAutostart(playlistItem.getBoolean("autostart"));
+                                }
+
+                                mPlayer.load(newPlayListItem);
+                                mPlayer.setFullscreen(true, true);
+
+                                if (autostart) {
+                                    mPlayer.play();
+                                }
+                            } else {
+                                boolean autostart = mPlayer.getConfig().getAutostart();
+                                if (autostart) {
+                                    mPlayer.play();
                                 }
                             }
-
-                            newPlayListItem.setAdSchedule(adSchedule);
                         }
-
-                        PlayerConfig playerConfig = new PlayerConfig.Builder()
-                                .skinConfig(skinConfig)
-                                .repeat(false)
-                                .controls(true)
-                                .autostart(autostart)
-                                .displayTitle(true)
-                                .displayDescription(true)
-                                .nextUpDisplay(true)
-                                .stretching(STRETCHING_UNIFORM)
-                                .build();
-
-                        Context simpleContext = getNonBuggyContext(getReactContext(), getAppContext());
-
-                        mPlayer = new RNJWPlayer(simpleContext, playerConfig);
-                        setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
-                        mPlayer.setLayoutParams(new LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.MATCH_PARENT));
-                        addView(mPlayer);
-
-                        setupPlayerView();
-
-                        NotificationManager notificationManager = (NotificationManager)mActivity.getSystemService(Context.NOTIFICATION_SERVICE);
-                        mNotificationWrapper = new NotificationWrapper(notificationManager);
-                        mMediaSessionManager = new MediaSessionManager(simpleContext,
-                                mPlayer,
-                                mNotificationWrapper);
-
-                        if (playlistItem.hasKey("autostart")) {
-                            mPlayer.getConfig().setAutostart(playlistItem.getBoolean("autostart"));
-                        }
-
-                        mPlayer.load(newPlayListItem);
-                        mPlayer.setFullscreen(true, true);
-
-                        if (autostart) {
-                            mPlayer.play();
-                        }
-                    } else {
-                        boolean autostart = mPlayer.getConfig().getAutostart();
-                        if (autostart) {
-                            mPlayer.play();
-                        }
+                        latch.countDown();
                     }
-                }
+                };
+                // prevent a race condition from occurring when the player is initialized
+                // and the android back button is pressed immediately after
+                // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
+                // which would cause the app to crash
+                // the Runnable is executed in a different thread asynchronously
+                // see https://nuuvuu.atlassian.net/browse/FSB-1466
+                playerInitializing = new Thread(runnable);
+                playerInitializing.run();
             }
         }
     }
