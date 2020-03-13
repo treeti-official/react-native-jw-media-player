@@ -338,17 +338,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
         @Override
         public void onFullscreenRequested() {
-            // Hide system ui
-            mDecorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hides bottom bar
-                | View.SYSTEM_UI_FLAG_FULLSCREEN // hides top bar
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY // prevents navigation bar from overriding
-                // exit-full-screen button. Swipe from side to access nav bar.
-            );
-
-            // Enter landscape mode for fullscreen videos
-            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
             // Destroy the player's rendering surface, we need to do this to prevent Android's
             // MediaDecoders from crashing.
             mPlayer.destroySurface();
@@ -370,19 +359,23 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                         ViewGroup.LayoutParams.MATCH_PARENT
                     ));
                     mFullscreenPlayer = mPlayer;
+                    // Hide system ui
+                    mDecorView.setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hides bottom bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hides top bar
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY // prevents navigation bar from overriding
+                        // exit-full-screen button. Swipe from side to access nav bar.
+                    );
+                    // Enter landscape mode for fullscreen videos
+                    // Use SCREEN_ORIENTATION_SENSOR_LANDSCAPE to allow landscape rotation
+                    // based on sensor
+                    mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
                 }
             });
         }
 
         @Override
         public void onFullscreenExitRequested() {
-            mDecorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
-            );
-
-            // Enter portrait mode
-            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
             // Destroy the surface that is used for video output, we need to do this before
             // we can detach the JWPlayerView from a ViewGroup.
             mPlayer.destroySurface();
@@ -405,6 +398,12 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                         ViewGroup.LayoutParams.MATCH_PARENT
                     ));
                     mFullscreenPlayer = null;
+                    // Enter portrait mode
+                    mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                    // Show system UI
+                    mDecorView.setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
+                    );
                 }
             });
         }
