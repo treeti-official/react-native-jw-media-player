@@ -241,6 +241,10 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
+
+                // So it is not garbage collected
+                ServiceConnection mServiceConnection = player.mServiceConnection;
+
                 // prevent a race condition from occurring when the player is initialized
                 // and the android back button is pressed immediately after
                 // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
@@ -708,7 +712,9 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
     private void doUnbindService() {
         if (mIsBound) {
             // Detach our existing connection.
-            mActivity.unbindService(mServiceConnection);
+            if(mServiceConnection != null) {
+                mActivity.unbindService(mServiceConnection);
+            }
             mIsBound = false;
         }
     }
