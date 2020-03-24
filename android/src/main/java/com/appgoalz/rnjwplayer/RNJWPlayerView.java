@@ -943,11 +943,12 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     @Override
     public void onError(ErrorEvent errorEvent) {
-        WritableMap event = Arguments.createMap();
-        event.putString("message", "onError");
-        event.putString("error", errorEvent.getException().toString());
-        getReactContext().getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "topPlayerError", event);
-
+        if(errorEvent != null && errorEvent.getException() != null) {
+            WritableMap event = Arguments.createMap();
+            event.putString("message", "onError");
+            event.putString("error", errorEvent.getException().toString());
+            getReactContext().getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "topPlayerError", event);
+        }
         updateWakeLock(false);
     }
 
