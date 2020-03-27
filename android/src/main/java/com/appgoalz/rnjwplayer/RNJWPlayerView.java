@@ -165,7 +165,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             // interact with the service.  Because we have bound to a explicit
             // service that we know is running in our own process, we can
             // cast its IBinder to a concrete class and directly access it.
-            mIsBound = true;
             mMediaPlaybackService = ((MediaPlaybackService.MediaPlaybackServiceBinder)service)
                     .getService();
             mMediaPlaybackService.setupMediaSession(mMediaSessionManager, mNotificationWrapper);
@@ -706,6 +705,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                         MediaPlaybackService.class),
                 mServiceConnection,
                 Context.BIND_AUTO_CREATE);
+        mIsBound = true;
 
     }
 
@@ -713,7 +713,11 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
         if (mIsBound) {
             // Detach our existing connection.
             if(mServiceConnection != null) {
-                mActivity.unbindService(mServiceConnection);
+                try {
+                    mActivity.unbindService(mServiceConnection);
+                } catch (IllegalArgumentException e) {
+                    Log.e(TAG,e.getMessage(), e);
+                }
             }
             mIsBound = false;
         }
@@ -810,7 +814,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
         if (!mIsBound) {
             doBindService();
         }
-
 
         if (playlist != null) {
             int currentPlayingIndex = playlistItemEvent.getIndex();
