@@ -494,6 +494,8 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         _player = [[JWPlayerController alloc] initWithConfig:config delegate:_proxy];
         
         _player.controls = YES;
+
+        [_player setFullscreen:true]
         
         [self setFullScreenOnLandscape:_fullScreenOnLandscape];
         [self setLandscapeOnFullScreen:_landscapeOnFullScreen];
