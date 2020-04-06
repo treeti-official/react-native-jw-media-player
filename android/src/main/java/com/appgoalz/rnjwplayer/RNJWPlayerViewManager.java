@@ -3,6 +3,7 @@ package com.appgoalz.rnjwplayer;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.pm.ActivityInfo;
 import android.os.Build;
 
 import androidx.annotation.Nullable;
@@ -321,6 +322,10 @@ public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> {
   @Override
   public void onDropViewInstance(@Nonnull RNJWPlayerView view) {
     view.destroyPlayer();
+    //If we stuck in LANDSCAPE
+    if(view.getActivity().getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+      view.getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
     view = null;
 
     super.onDropViewInstance(view);
