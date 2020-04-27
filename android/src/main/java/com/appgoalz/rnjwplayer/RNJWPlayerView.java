@@ -8,18 +8,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -134,6 +139,11 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     private ThemedReactContext mThemedReactContext;
 
+    private TextView titleView;
+    private Button nextUpBtn;
+
+    private Context mSimpleContext;
+
     /**
      * Whether we have bound to a {@link MediaPlaybackService}.
      */
@@ -218,9 +228,37 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
         mRootView = mActivity.findViewById(android.R.id.content);
 
-        Context simpleContext = getNonBuggyContext(getReactContext(), getAppContext());
+        mSimpleContext = getNonBuggyContext(getReactContext(), getAppContext());
 
-        audioManager = (AudioManager) simpleContext.getSystemService(Context.AUDIO_SERVICE);
+        audioManager = (AudioManager) mSimpleContext.getSystemService(Context.AUDIO_SERVICE);
+
+        titleView = setupTitleView();
+        nextUpBtn = setupNextUpBtn();
+    }
+
+    private TextView setupTitleView() {
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        params.setMargins(20,20,0,0);
+
+        TextView view = new TextView(mSimpleContext);
+        view.setLayoutParams(params);
+        view.setTextColor(Color.BLACK);
+        view.setBackgroundColor(Color.WHITE);
+        view.setPadding(6, 6, 6, 6);
+        return view;
+    }
+
+    private Button setupNextUpBtn() {
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        params.setMargins(0,0,20,120);
+        params.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+
+        Button btn = new Button(mSimpleContext);
+        btn.setLayoutParams(params);
+        btn.setText("NEXT UP");
+        btn.setTextColor(Color.BLACK);
+        btn.setBackgroundColor(Color.WHITE);
+        return btn;
     }
 
     public ReactApplicationContext getAppContext() {
@@ -361,6 +399,13 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
                     ));
+                    // set the title from the playlist item
+                    if (playlistItem != null && playlistItem.hasKey("title")) {
+                        titleView.setText(playlistItem.getString("title"));
+                    }
+                    // attach to the root view
+                    mRootView.addView(titleView);
+
                     mFullscreenPlayer = mPlayer;
                     // Hide system ui
                     mDecorView.setSystemUiVisibility(
@@ -396,6 +441,12 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             mPlayerContainer.post(new Runnable() {
                 @Override
                 public void run() {
+                    // remove the title text and the next up btn
+                    mRootView.removeView(titleView);
+                    if (mRootView.indexOfChild(nextUpBtn) != -1) {
+                        mRootView.removeView(nextUpBtn);
+                    }
+
                     mPlayerContainer.addView(mPlayer, new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
@@ -521,9 +572,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                                         .stretching(STRETCHING_UNIFORM)
                                         .build();
 
-                                Context simpleContext = getNonBuggyContext(getReactContext(), getAppContext());
-
-                                mPlayer = new RNJWPlayer(simpleContext, playerConfig);
+                                mPlayer = new RNJWPlayer(mSimpleContext, playerConfig);
                                 setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
                                 mPlayer.setLayoutParams(new LinearLayout.LayoutParams(
                                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -534,7 +583,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
                                 NotificationManager notificationManager = (NotificationManager)mActivity.getSystemService(Context.NOTIFICATION_SERVICE);
                                 mNotificationWrapper = new NotificationWrapper(notificationManager);
-                                mMediaSessionManager = new MediaSessionManager(simpleContext,
+                                mMediaSessionManager = new MediaSessionManager(mSimpleContext,
                                         mPlayer,
                                         mNotificationWrapper);
 
@@ -665,9 +714,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                         .stretching(STRETCHING_UNIFORM)
                         .build();
 
-                Context simpleContext = getNonBuggyContext(getReactContext(), getAppContext());
-
-                mPlayer = new RNJWPlayer(simpleContext, playerConfig);
+                mPlayer = new RNJWPlayer(mSimpleContext, playerConfig);
                 setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
                 mPlayer.setLayoutParams(new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -678,7 +725,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
                 NotificationManager notificationManager = (NotificationManager)mActivity.getSystemService(Context.NOTIFICATION_SERVICE);
                 mNotificationWrapper = new NotificationWrapper(notificationManager);
-                mMediaSessionManager = new MediaSessionManager(simpleContext,
+                mMediaSessionManager = new MediaSessionManager(mSimpleContext,
                         mPlayer,
                         mNotificationWrapper);
 
@@ -966,10 +1013,20 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     @Override
     public void onTime(TimeEvent timeEvent) {
+        double contentDuration = timeEvent.getDuration();
+        double eventPosition = timeEvent.getPosition();
+
         WritableMap event = Arguments.createMap();
         event.putString("message", "onTime");
-        event.putDouble("position", timeEvent.getPosition());
+        event.putDouble("position", eventPosition);
         getReactContext().getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "topTime", event);
+
+        // prevent zero division
+        if (contentDuration > 1) {
+            if (eventPosition / contentDuration * 100 > 90 && mRootView.indexOfChild(nextUpBtn) == -1) {
+                mRootView.addView(nextUpBtn);
+            }
+        }
     }
 
     @Override
@@ -979,6 +1036,9 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     @Override
     public void onControlBarVisibilityChanged(ControlBarVisibilityEvent controlBarVisibilityEvent) {
+        if (titleView != null) {
+            titleView.setVisibility(controlBarVisibilityEvent.isVisible() ? View.VISIBLE : View.INVISIBLE);
+        }
         WritableMap event = Arguments.createMap();
         event.putString("message", "onControlBarVisible");
         event.putBoolean("controls", controlBarVisibilityEvent.isVisible());
