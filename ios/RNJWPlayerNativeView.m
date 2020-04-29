@@ -13,6 +13,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     if (self) {
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioInterruptionsStarted:) name:AudioInterruptionsStarted object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioInterruptionsEnded:) name:AudioInterruptionsEnded object:nil];
+        self.isNextUpBtnVisible = false;
     }
     
     return self;
@@ -404,20 +405,70 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         
         _proxy = [RNJWPlayerDelegateProxy new];
         _proxy.delegate = self;
-
-        
         
         _player = [[JWPlayerController alloc] initWithConfig:config delegate:_proxy];
-        
         _player.controls = [[playlistItem objectForKey:@"controls"] boolValue];
-        
+    
         [_player setFullscreen:true];
         
         [self setFullScreenOnLandscape:_fullScreenOnLandscape];
         [self setLandscapeOnFullScreen:_landscapeOnFullScreen];
         
         [self addSubview:self.player.view];
+        
+        if (config.title != nil) {
+            UILabel *titleLabel = [self setupTitleLabel:config.title];
+            UIView *jwPlayerInternalView = self.player.view.subviews[0];
+            self.jwPlayerInternalView = jwPlayerInternalView;
+            [jwPlayerInternalView addSubview:titleLabel];
+        }
     }
+}
+
+-(UILabel *)setupTitleLabel:(NSString *)title
+{
+    // create the label
+    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 10, 10, 10)];
+    titleLabel.backgroundColor = [UIColor blackColor];
+    titleLabel.textColor = [UIColor whiteColor];
+    [titleLabel setText:title];
+    [titleLabel setNumberOfLines:1];
+    titleLabel.textAlignment = NSTextAlignmentCenter;
+
+    // calculate size of the text to be rendered
+    CGSize expectedLabelSize = [[titleLabel text] sizeWithAttributes:@{NSFontAttributeName:titleLabel.font}];
+    CGRect frame = titleLabel.frame;
+    
+    // set the correct size of the label
+    // added integers add a little bit of padding
+    frame.size.height = expectedLabelSize.height + 6;
+    frame.size.width = expectedLabelSize.width + 8;
+    titleLabel.frame = frame;
+    
+    self.titleLabel = titleLabel;
+    
+    return titleLabel;
+}
+
+-(UIButton *)setupNextUpBtn
+{
+    // create the button
+    int btnWidth = 100;
+    int btnHeight = 50;
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(100, 100, btnWidth, btnHeight)];
+    btn.backgroundColor = [UIColor blackColor];
+    btn.tintColor = [UIColor whiteColor];
+    [btn setTitle:@"NEXT UP" forState:UIControlStateNormal];
+    
+    // get screen dimensions
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    CGFloat screenWidth = screenRect.size.width;
+    CGFloat screenHeight = screenRect.size.height;
+    // calculate the position of the button so it's bottom-right on the screen
+    CGRect frame = CGRectMake(screenWidth - (btnWidth + 20), screenHeight - (btnHeight + 60), btnWidth, btnHeight);
+    btn.frame = frame;
+    
+    return btn;
 }
 
 -(void)resetPlaylistItem
@@ -618,6 +669,15 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 
 -(void)onRNJWPlayerTime:(JWEvent<JWTimeEvent> *)event
 {
+    // prevent zero division
+    if (event.duration > 1) {
+        if (event.position / event.duration * 100 > 90 && !self.isNextUpBtnVisible) {
+            self.isNextUpBtnVisible = true;
+            UIButton *btn = [self setupNextUpBtn];
+            [self.jwPlayerInternalView addSubview:btn];
+        }
+    }
+
     if (self.onTime) {
         NSLog(@"position: %@",@(event.position));
         self.onTime(@{@"position": @(event.position), @"duration": @(event.duration)});
@@ -702,6 +762,9 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 
 -(void)onRNJWControlBarVisible:(JWEvent<JWControlsEvent> *)event
 {
+    if (self.titleLabel != nil) {
+        self.titleLabel.alpha = event.controls ? 1.0 : 0.0;
+    }
     if (self.onControlBarVisible) {
         self.onControlBarVisible(@{@"controls": @(event.controls)});
     }
