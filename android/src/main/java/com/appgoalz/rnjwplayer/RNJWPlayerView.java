@@ -398,7 +398,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             // Show system UI
             mDecorView.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
+                View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
             );
 
             // As soon as the UI thread has finished processing the current message queue it
