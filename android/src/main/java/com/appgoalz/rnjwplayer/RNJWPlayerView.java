@@ -391,6 +391,16 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             // After we've detached the JWPlayerView we can safely reinitialize the surface.
             mPlayer.initializeSurface();
 
+            // handling of orientation and ui visibility must be done outside the runnable
+            // otherwise the handlers are not called when closing player through alert
+            // see https://nuuvuu.atlassian.net/browse/FSB-1539
+            // Enter portrait mode
+            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            // Show system UI
+            mDecorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
+            );
+
             // As soon as the UI thread has finished processing the current message queue it
             // should add the JWPlayerView back to the list item.
             mPlayerContainer.post(new Runnable() {
@@ -401,12 +411,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                         ViewGroup.LayoutParams.MATCH_PARENT
                     ));
                     mFullscreenPlayer = null;
-                    // Enter portrait mode
-                    mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                    // Show system UI
-                    mDecorView.setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_VISIBLE // clear the hide system flags
-                    );
                 }
             });
         }
