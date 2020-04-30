@@ -2,17 +2,12 @@ package com.appgoalz.rnjwplayer;
 
 
 import android.app.Activity;
-import android.app.NotificationManager;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.os.Build;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -134,52 +129,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     private ThemedReactContext mThemedReactContext;
 
-    /**
-     * Whether we have bound to a {@link MediaPlaybackService}.
-     */
-    private boolean mIsBound = false;
-
-    /**
-     * The {@link MediaPlaybackService} we are bound to. T
-     */
-    private MediaPlaybackService mMediaPlaybackService;
-
-    /**
-     * The {@link MediaSessionManager} handles the MediaSession logic, along with updates to the notification
-     */
-    private MediaSessionManager mMediaSessionManager;
-
-    /**
-     * The {@link MediaSessionManager} handles the Notification set and dismissal logic
-     */
-    private NotificationWrapper mNotificationWrapper;
-
-    /**
-     * The {@link ServiceConnection} serves as glue between this activity and the {@link MediaPlaybackService}.
-     */
-    private ServiceConnection mServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder service) {
-            // This is called when the connection with the service has been
-            // established, giving us the service object we can use to
-            // interact with the service.  Because we have bound to a explicit
-            // service that we know is running in our own process, we can
-            // cast its IBinder to a concrete class and directly access it.
-            mMediaPlaybackService = ((MediaPlaybackService.MediaPlaybackServiceBinder)service)
-                    .getService();
-            mMediaPlaybackService.setupMediaSession(mMediaSessionManager, mNotificationWrapper);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-            // This is called when the connection with the service has been
-            // unexpectedly disconnected -- that is, its process crashed.
-            // Because it is running in our same process, we should never
-            // see this happen.
-            mMediaPlaybackService = null;
-        }
-    };
-
     private static boolean contextHasBug(Context context) {
         return context == null ||
                 context.getResources() == null ||
@@ -241,9 +190,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             @Override
             public void run() {
 
-                // So it is not garbage collected
-                ServiceConnection mServiceConnection = player.mServiceConnection;
-
                 // prevent a race condition from occurring when the player is initialized
                 // and the android back button is pressed immediately after
                 // this would normally call onFullscreenExitRequested first and then onFullscreenRequested,
@@ -293,7 +239,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                     }
 
                     audioManager = null;
-                    player.doUnbindService();
                 }
             }
         };
@@ -532,12 +477,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
                                 setupPlayerView();
 
-                                NotificationManager notificationManager = (NotificationManager)mActivity.getSystemService(Context.NOTIFICATION_SERVICE);
-                                mNotificationWrapper = new NotificationWrapper(notificationManager);
-                                mMediaSessionManager = new MediaSessionManager(simpleContext,
-                                        mPlayer,
-                                        mNotificationWrapper);
-
                                 if (playlistItem.hasKey("autostart")) {
                                     mPlayer.getConfig().setAutostart(playlistItem.getBoolean("autostart"));
                                 }
@@ -676,12 +615,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
                 setupPlayerView();
 
-                NotificationManager notificationManager = (NotificationManager)mActivity.getSystemService(Context.NOTIFICATION_SERVICE);
-                mNotificationWrapper = new NotificationWrapper(notificationManager);
-                mMediaSessionManager = new MediaSessionManager(simpleContext,
-                        mPlayer,
-                        mNotificationWrapper);
-
                 if (playlist.getMap(0).hasKey("autostart")) {
                     mPlayer.getConfig().setAutostart(playlist.getMap(0).getBoolean("autostart"));
                 }
@@ -693,33 +626,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                     mPlayer.play();
                 }
             }
-        }
-    }
-
-    private void doBindService() {
-        // Establish a connection with the service.  We use an explicit
-        // class name because we want a specific service implementation that
-        // we know will be running in our own process (and thus won't be
-        // supporting component replacement by other applications).
-        mActivity.bindService(new Intent(RNJWPlayerView.mActivity,
-                        MediaPlaybackService.class),
-                mServiceConnection,
-                Context.BIND_AUTO_CREATE);
-        mIsBound = true;
-
-    }
-
-    private void doUnbindService() {
-        if (mIsBound) {
-            // Detach our existing connection.
-            if(mServiceConnection != null) {
-                try {
-                    mActivity.unbindService(mServiceConnection);
-                } catch (IllegalArgumentException e) {
-                    Log.e(TAG,e.getMessage(), e);
-                }
-            }
-            mIsBound = false;
         }
     }
 
@@ -811,10 +717,6 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     @Override
     public void onPlaylistItem(PlaylistItemEvent playlistItemEvent) {
-        if (!mIsBound) {
-            doBindService();
-        }
-
         if (playlist != null) {
             int currentPlayingIndex = playlistItemEvent.getIndex();
             ReadableMap playlistItem = playlist.getMap(currentPlayingIndex);

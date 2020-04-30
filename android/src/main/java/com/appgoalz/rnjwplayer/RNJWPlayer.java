@@ -8,6 +8,8 @@ import android.view.KeyEvent;
 import android.view.View;
 import com.longtailvideo.jwplayer.JWPlayerView;
 import com.longtailvideo.jwplayer.configuration.PlayerConfig;
+import android.util.Log;
+
 
 public class RNJWPlayer extends JWPlayerView {
 
@@ -60,4 +62,5 @@ public class RNJWPlayer extends JWPlayerView {
             this.setFullscreen(false,false);
         }
     }
+
 }
