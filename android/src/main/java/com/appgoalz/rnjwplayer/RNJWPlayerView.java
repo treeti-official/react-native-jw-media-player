@@ -451,7 +451,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                                         ReadableMap adBreakProp = ad.getMap(i);
                                         String offset = adBreakProp.getString("offset");
                                         if (adBreakProp.hasKey("tag")) {
-                                            AdBreak adBreak = new AdBreak(offset, AdSource.IMA, adBreakProp.getString("tag"));
+                                            AdBreak adBreak = new AdBreak(offset, AdSource.VAST, adBreakProp.getString("tag"));
                                             adSchedule.add(adBreak);
                                         }
                                     }
@@ -555,7 +555,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                                 ReadableMap adBreakProp = ad.getMap(i);
                                 String offset = adBreakProp.hasKey("offset") ? adBreakProp.getString("offset") : "pre";
                                 if (adBreakProp.hasKey("tag")) {
-                                    AdBreak adBreak = new AdBreak(offset, AdSource.IMA, adBreakProp.getString("tag"));
+                                    AdBreak adBreak = new AdBreak(offset, AdSource.VAST, adBreakProp.getString("tag"));
                                     adSchedule.add(adBreak);
                                 }
                             }

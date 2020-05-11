@@ -396,7 +396,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 
         if(adsArray.count > 0) {
             JWAdConfig* advertising = [JWAdConfig new];
-            advertising.client = JWAdClientGoogima;
+            advertising.client = JWAdClientVast;
 
             advertising.schedule = adsArray;
             config.advertising = advertising;
