@@ -192,6 +192,11 @@ public class RNJWPlayerViewManager extends SimpleViewManager<RNJWPlayerView> {
     view.setPlaylist(prop);
   }
 
+  @ReactProp(name = "showNextEpisode")
+  public void showNextEpisode(RNJWPlayerView view, ReadableMap prop) {
+    view.showNextEpisode(prop);
+  }
+
   public Map getExportedCustomBubblingEventTypeConstants() {
     return MapBuilder.builder()
             .put(

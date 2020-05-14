@@ -1,79 +1,52 @@
-package com.appgoalz.rnjwplayer;
+package main;
+
+import java.io.InputStream;
+import java.util.Hashtable;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.widget.ImageView;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-/**
- * Downloads images and returns them as bitmap.
- * <p>
- * Clients need to extend it and implement their own onPostExecute method.
- */
 public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
 
-	interface ImageDownloadListener {
-		void onBitmapReady(Bitmap bitmap);
+	ImageView bmImage;
+	static Hashtable<String, Bitmap> images;
+
+	public DownloadImageTask(ImageView bmImage) {
+		this.bmImage = bmImage;
+		if(images == null){
+			images = new Hashtable<String, Bitmap>();
+		}
 	}
 
-	WeakReference<ImageDownloadListener> mImageDownloadListener;
-
-	public DownloadImageTask(ImageDownloadListener listener) {
-		this.mImageDownloadListener = new WeakReference<>(listener);
-	}
-
-	@Override
 	protected Bitmap doInBackground(String... urls) {
-		if (urls.length != 1 || urls[0] == null) {
-			return null;
+		Bitmap image = images.get(urls[0]);
+		if(image!=null){
+			return image;
 		}
 
-		Bitmap bitmap = null;
-		URL url;
+		String urldisplay = urls[0];
+		Bitmap mIcon11 = null;
 		try {
-			url = new URL(urls[0]);
-		} catch (MalformedURLException e) {
+			InputStream in = new java.net.URL(urldisplay).openStream();
+			mIcon11 = BitmapFactory.decodeStream(in);
+		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
 		}
-		HttpURLConnection urlConnection = null;
-		InputStream stream = null;
-		try {
-			urlConnection = (HttpURLConnection)url.openConnection();
-			if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-
-				stream = new BufferedInputStream(urlConnection.getInputStream());
-				bitmap = BitmapFactory.decodeStream(stream);
-			}
-		} catch (IOException e) {
-			/* ignore */
-			e.printStackTrace();
-		} finally {
-			if (urlConnection != null) {
-				urlConnection.disconnect();
-			}
-			if (stream != null) {
-				try {
-					stream.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+		if(mIcon11!=null){
+			images.put(urldisplay, mIcon11);
 		}
-		return bitmap;
+		return mIcon11;
 	}
 
-	@Override
-	protected void onPostExecute(Bitmap bitmap) {
-		if (mImageDownloadListener.get() != null) {
-			mImageDownloadListener.get().onBitmapReady(bitmap);
-		}
+	protected void onPostExecute(Bitmap result) {
+		bmImage.setImageBitmap(result);
 	}
+
+	public static void showImage(ImageView iv, String url){
+		if(url!=null && !url.equals(""))
+			new DownloadImageTask(iv).execute(url);
+	}
+
 }
