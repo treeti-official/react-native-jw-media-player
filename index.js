@@ -128,6 +128,10 @@ export default class JWPlayer extends Component {
     if (RNJWPlayerManager) RNJWPlayerManager.stop(this.getRNJWPlayerBridgeHandle());
   }
 
+  showNextEpisode(episode) {
+    if (RNJWPlayerManager) RNJWPlayerManager.showNextEpisode(this.getRNJWPlayerBridgeHandle(), episode);
+  }
+
   toggleSpeed() {
     if (RNJWPlayerManager) RNJWPlayerManager.toggleSpeed(this.getRNJWPlayerBridgeHandle());
   }
