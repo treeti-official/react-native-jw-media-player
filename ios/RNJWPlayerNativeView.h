@@ -50,6 +50,12 @@
 @property(nonatomic, copy)RCTBubblingEventBlock onComplete;
 @property(nonatomic, copy)RCTBubblingEventBlock onAdPlay;
 
+@property(nonatomic, strong)UIView *jwPlayerInternalView;
+@property(nonatomic)int timerCount;
+@property(nonatomic, strong)NSTimer *timer;
+@property(nonatomic, strong)UILabel *secondsLeftLabel;
+@property(nonatomic, strong)UIView *nextUpView;
+@property(nonatomic)NSDictionary *nextEpisode;
 
 -(void)onRNJWReady;
 -(void)onRNJWPlaylist;
@@ -78,5 +84,8 @@
 -(void)reset;
 -(void)setPlaylistItem:(NSDictionary *)playlistItem;
 -(void)setPlaylist:(NSArray *)playlist;
+
+-(void)showNextEpisode:(NSDictionary *)nextEpisode;
+-(void)onClose;
 
 @end
