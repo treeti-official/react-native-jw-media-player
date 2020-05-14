@@ -41,6 +41,7 @@
 		3BC75FD21E43B3740011FBAA /* RNJWPlayerDelegateProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNJWPlayerDelegateProxy.m; sourceTree = "<group>"; };
 		B3E7B5881CC2AC0600A0062D /* RNJWPlayerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNJWPlayerManager.h; sourceTree = "<group>"; };
 		B3E7B5891CC2AC0600A0062D /* RNJWPlayerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNJWPlayerManager.m; sourceTree = "<group>"; };
+		EA4973A8246D7D7400D4A9AB /* NextUpView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NextUpView.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +79,7 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				EA4973A8246D7D7400D4A9AB /* NextUpView.xib */,
 				2A2CAD5F22AFFAB000C52FD1 /* CustomJWPlaylistItem.h */,
 				2A2CAD6022AFFAB000C52FD1 /* CustomJWPlaylistItem.m */,
 				3BC75FD21E43B3740011FBAA /* RNJWPlayerDelegateProxy.m */,
