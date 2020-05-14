@@ -23,7 +23,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     [[NSNotificationCenter defaultCenter] removeObserver:AudioInterruptionsStarted];
     [[NSNotificationCenter defaultCenter] removeObserver:AudioInterruptionsEnded];
     if (self.timer != nil) {
-        [self.timer invalidate];
+        [self stopTimer];
     }
 }
 
@@ -399,7 +399,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 
         if(adsArray.count > 0) {
             JWAdConfig* advertising = [JWAdConfig new];
-            advertising.client = JWAdClientGoogima;
+            advertising.client = JWAdClientVast;
 
             advertising.schedule = adsArray;
             config.advertising = advertising;
