@@ -15,6 +15,7 @@
 		3BC75FD31E43B3740011FBAA /* RNJWPlayerDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BC75FD21E43B3740011FBAA /* RNJWPlayerDelegateProxy.m */; };
 		B3E7B58A1CC2AC0600A0062D /* RNJWPlayerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* RNJWPlayerManager.m */; };
 		EA4973B2246D846600D4A9AB /* NextUpView.xib in CopyFiles */ = {isa = PBXBuildFile; fileRef = EA4973A8246D7D7400D4A9AB /* NextUpView.xib */; };
+		EA4973B4246D867D00D4A9AB /* Images.xcassets in CopyFiles */ = {isa = PBXBuildFile; fileRef = EA4973B3246D865700D4A9AB /* Images.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,6 +25,7 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				EA4973B4246D867D00D4A9AB /* Images.xcassets in CopyFiles */,
 				EA4973B2246D846600D4A9AB /* NextUpView.xib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -44,6 +46,7 @@
 		B3E7B5881CC2AC0600A0062D /* RNJWPlayerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNJWPlayerManager.h; sourceTree = "<group>"; };
 		B3E7B5891CC2AC0600A0062D /* RNJWPlayerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNJWPlayerManager.m; sourceTree = "<group>"; };
 		EA4973A8246D7D7400D4A9AB /* NextUpView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NextUpView.xib; sourceTree = "<group>"; };
+		EA4973B3246D865700D4A9AB /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +84,7 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				EA4973B3246D865700D4A9AB /* Images.xcassets */,
 				EA4973A8246D7D7400D4A9AB /* NextUpView.xib */,
 				2A2CAD5F22AFFAB000C52FD1 /* CustomJWPlaylistItem.h */,
 				2A2CAD6022AFFAB000C52FD1 /* CustomJWPlaylistItem.m */,
