@@ -14,6 +14,7 @@
 		3BC75FD11E43B3090011FBAA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3BC75FD01E43B3090011FBAA /* Foundation.framework */; };
 		3BC75FD31E43B3740011FBAA /* RNJWPlayerDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BC75FD21E43B3740011FBAA /* RNJWPlayerDelegateProxy.m */; };
 		B3E7B58A1CC2AC0600A0062D /* RNJWPlayerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* RNJWPlayerManager.m */; };
+		EA18B2B2246EBD3E007B549F /* Assets.bundle in Resources */ = {isa = PBXBuildFile; fileRef = EA18B2B0246EBD0F007B549F /* Assets.bundle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -42,6 +43,8 @@
 		B3E7B5881CC2AC0600A0062D /* RNJWPlayerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNJWPlayerManager.h; sourceTree = "<group>"; };
 		B3E7B5891CC2AC0600A0062D /* RNJWPlayerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNJWPlayerManager.m; sourceTree = "<group>"; };
 		EA18B2A7246EB2BD007B549F /* NextUpView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NextUpView.xib; sourceTree = "<group>"; };
+		EA18B2AF246EBC88007B549F /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		EA18B2B0246EBD0F007B549F /* Assets.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Assets.bundle; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,9 +82,11 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				EA18B2AF246EBC88007B549F /* Images.xcassets */,
 				EA18B2A7246EB2BD007B549F /* NextUpView.xib */,
 				2A2CAD5F22AFFAB000C52FD1 /* CustomJWPlaylistItem.h */,
 				2A2CAD6022AFFAB000C52FD1 /* CustomJWPlaylistItem.m */,
+				EA18B2B0246EBD0F007B549F /* Assets.bundle */,
 				3BC75FD21E43B3740011FBAA /* RNJWPlayerDelegateProxy.m */,
 				3BC75FCF1E43B2F70011FBAA /* RNJWPlayerDelegateProxy.h */,
 				3BC75FCD1E43B2930011FBAA /* RNJWPlayerNativeView.m */,
@@ -103,6 +108,7 @@
 				58B511D71A9E6C8500147676 /* Sources */,
 				58B511D81A9E6C8500147676 /* Frameworks */,
 				58B511D91A9E6C8500147676 /* CopyFiles */,
+				EA18B2B1246EBD3A007B549F /* Resources */,
 			);
 			buildRules = (
 			);
@@ -145,6 +151,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		EA18B2B1246EBD3A007B549F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EA18B2B2246EBD3E007B549F /* Assets.bundle in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		58B511D71A9E6C8500147676 /* Sources */ = {
