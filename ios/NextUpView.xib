@@ -40,7 +40,7 @@
                         <button opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="fl3-S0-t5L">
                             <rect key="frame" x="612" y="35" width="24" height="25"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                            <state key="normal" image="Close"/>
+                            <state key="normal" image="ico-close.png"/>
                         </button>
                         <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Rampage" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="GII-ZN-0rc">
                             <rect key="frame" x="442" y="255" width="137" height="20"/>
@@ -79,6 +79,6 @@
         </view>
     </objects>
     <resources>
-        <image name="Close" width="24" height="25"/>
+        <image name="ico-close.png" width="72" height="75"/>
     </resources>
 </document>

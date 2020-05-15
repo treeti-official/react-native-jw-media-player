@@ -15,7 +15,7 @@
 		3BC75FD31E43B3740011FBAA /* RNJWPlayerDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BC75FD21E43B3740011FBAA /* RNJWPlayerDelegateProxy.m */; };
 		B3E7B58A1CC2AC0600A0062D /* RNJWPlayerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* RNJWPlayerManager.m */; };
 		EA18B2B4246EC046007B549F /* NextUpView.xib in CopyFiles */ = {isa = PBXBuildFile; fileRef = EA18B2A7246EB2BD007B549F /* NextUpView.xib */; };
-		EA18B2B5246EC04B007B549F /* Images.xcassets in CopyFiles */ = {isa = PBXBuildFile; fileRef = EA18B2AF246EBC88007B549F /* Images.xcassets */; };
+		EA5EEFE5246ED76F004DB414 /* ico-close.png in Resources */ = {isa = PBXBuildFile; fileRef = EA5EEFE4246ED76F004DB414 /* ico-close.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,7 +25,6 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
-				EA18B2B5246EC04B007B549F /* Images.xcassets in CopyFiles */,
 				EA18B2B4246EC046007B549F /* NextUpView.xib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -46,7 +45,7 @@
 		B3E7B5881CC2AC0600A0062D /* RNJWPlayerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNJWPlayerManager.h; sourceTree = "<group>"; };
 		B3E7B5891CC2AC0600A0062D /* RNJWPlayerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNJWPlayerManager.m; sourceTree = "<group>"; };
 		EA18B2A7246EB2BD007B549F /* NextUpView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NextUpView.xib; sourceTree = "<group>"; };
-		EA18B2AF246EBC88007B549F /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		EA5EEFE4246ED76F004DB414 /* ico-close.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ico-close.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,7 +83,7 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
-				EA18B2AF246EBC88007B549F /* Images.xcassets */,
+				EA5EEFE4246ED76F004DB414 /* ico-close.png */,
 				EA18B2A7246EB2BD007B549F /* NextUpView.xib */,
 				2A2CAD5F22AFFAB000C52FD1 /* CustomJWPlaylistItem.h */,
 				2A2CAD6022AFFAB000C52FD1 /* CustomJWPlaylistItem.m */,
@@ -158,6 +157,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EA5EEFE5246ED76F004DB414 /* ico-close.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
