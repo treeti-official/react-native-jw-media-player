@@ -14,7 +14,7 @@
 		3BC75FD11E43B3090011FBAA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3BC75FD01E43B3090011FBAA /* Foundation.framework */; };
 		3BC75FD31E43B3740011FBAA /* RNJWPlayerDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BC75FD21E43B3740011FBAA /* RNJWPlayerDelegateProxy.m */; };
 		B3E7B58A1CC2AC0600A0062D /* RNJWPlayerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* RNJWPlayerManager.m */; };
-		EA6CB04C246EA21900533209 /* NextUpView.xib in CopyFiles */ = {isa = PBXBuildFile; fileRef = EA4973A8246D7D7400D4A9AB /* NextUpView.xib */; };
+		EA6CB04E246EA7BC00533209 /* NextUpView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EA4973A8246D7D7400D4A9AB /* NextUpView.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,7 +24,6 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
-				EA6CB04C246EA21900533209 /* NextUpView.xib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,6 +104,7 @@
 				58B511D71A9E6C8500147676 /* Sources */,
 				58B511D81A9E6C8500147676 /* Frameworks */,
 				58B511D91A9E6C8500147676 /* CopyFiles */,
+				EA6CB04D246EA7B500533209 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -147,6 +147,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		EA6CB04D246EA7B500533209 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EA6CB04E246EA7BC00533209 /* NextUpView.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		58B511D71A9E6C8500147676 /* Sources */ = {
