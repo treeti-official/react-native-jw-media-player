@@ -14,8 +14,8 @@
 		3BC75FD11E43B3090011FBAA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3BC75FD01E43B3090011FBAA /* Foundation.framework */; };
 		3BC75FD31E43B3740011FBAA /* RNJWPlayerDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BC75FD21E43B3740011FBAA /* RNJWPlayerDelegateProxy.m */; };
 		B3E7B58A1CC2AC0600A0062D /* RNJWPlayerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* RNJWPlayerManager.m */; };
-		EA8A181D246E943600020E7A /* NextUpView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EA4973A8246D7D7400D4A9AB /* NextUpView.xib */; };
 		EA8A1823246E976500020E7A /* NextUpView.xib in CopyFiles */ = {isa = PBXBuildFile; fileRef = EA4973A8246D7D7400D4A9AB /* NextUpView.xib */; };
+		EA8A1827246E9BA300020E7A /* NextUpView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EA4973A8246D7D7400D4A9AB /* NextUpView.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -106,7 +106,7 @@
 				58B511D71A9E6C8500147676 /* Sources */,
 				58B511D81A9E6C8500147676 /* Frameworks */,
 				58B511D91A9E6C8500147676 /* CopyFiles */,
-				EA8A181C246E942F00020E7A /* Resources */,
+				EA8A1826246E9B9F00020E7A /* Resources */,
 			);
 			buildRules = (
 			);
@@ -151,11 +151,11 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		EA8A181C246E942F00020E7A /* Resources */ = {
+		EA8A1826246E9B9F00020E7A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EA8A181D246E943600020E7A /* NextUpView.xib in Resources */,
+				EA8A1827246E9BA300020E7A /* NextUpView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
