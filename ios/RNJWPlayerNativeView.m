@@ -507,18 +507,25 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     NSString *imgUrl = [episode objectForKey:@"image"];
                     
     UIView *nextUpView = [[NSBundle.mainBundle loadNibNamed:@"NextUpView" owner:self options:nil] objectAtIndex:0];
+    // get the size of the screen
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    CGFloat screenWidth = screenRect.size.width;
+    CGFloat screenHeight = screenRect.size.height;
+    CGRect frame = CGRectMake(0, 0, screenWidth, screenHeight);
+    // stretch the topmost container to the size of the entire screen
+    nextUpView.frame = frame;
 
     // tags are set in xcode
     UILabel *secondsLeftLabel = [nextUpView viewWithTag:1];
     UIImageView *imgView = [nextUpView viewWithTag:2];
     UILabel *titleLabel = [nextUpView viewWithTag:3];
     UIButton *closeBtn = [nextUpView viewWithTag:6];
-                    
+    
+    // set image url
     imgView.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:imgUrl]]];
-    imgView.layer.cornerRadius = 5;
-    imgView.clipsToBounds = YES;
     [titleLabel setText:title];
     self.secondsLeftLabel = secondsLeftLabel;
+    // register callback for button
     [closeBtn addTarget:self action:@selector(onClose) forControlEvents:UIControlEventTouchUpInside];
 
     return nextUpView;
