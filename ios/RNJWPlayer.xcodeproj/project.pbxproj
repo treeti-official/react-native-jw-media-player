@@ -15,6 +15,7 @@
 		3BC75FD31E43B3740011FBAA /* RNJWPlayerDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BC75FD21E43B3740011FBAA /* RNJWPlayerDelegateProxy.m */; };
 		B3E7B58A1CC2AC0600A0062D /* RNJWPlayerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* RNJWPlayerManager.m */; };
 		EA8A181D246E943600020E7A /* NextUpView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EA4973A8246D7D7400D4A9AB /* NextUpView.xib */; };
+		EA8A1823246E976500020E7A /* NextUpView.xib in CopyFiles */ = {isa = PBXBuildFile; fileRef = EA4973A8246D7D7400D4A9AB /* NextUpView.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,6 +25,7 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				EA8A1823246E976500020E7A /* NextUpView.xib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
