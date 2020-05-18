@@ -86,6 +86,6 @@
 -(void)setPlaylist:(NSArray *)playlist;
 
 -(void)showNextEpisode:(NSDictionary *)nextEpisode;
--(void)onClose;
+-(void)closeNextUpView;
 
 @end
