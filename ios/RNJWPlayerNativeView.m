@@ -538,7 +538,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     [titleLabel setText:title];
     self.secondsLeftLabel = secondsLeftLabel;
     // register callback for button
-    [closeBtn addTarget:self action:@selector(onClose) forControlEvents:UIControlEventTouchUpInside];
+    [closeBtn addTarget:self action:@selector(closeNextUpView) forControlEvents:UIControlEventTouchUpInside];
 
     return nextUpView;
 }
@@ -566,6 +566,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     NSString *secondsLeft = [NSString stringWithFormat:@"%d", self.timerCount];
     [self.secondsLeftLabel setText:secondsLeft];
     if (self.timerCount == 0) {
+        [self closeNextUpView];
         [self onNextEpisode];
     }
 }
@@ -579,12 +580,11 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 
 -(void)onNextEpisode
 {
-    [self onClose];
     [self resetPlaylistItem];
     [self setPlaylistItem:self.nextEpisode];
 }
 
--(void)onClose
+-(void)closeNextUpView
 {
     [self stopTimer];
     [self.nextUpView removeFromSuperview];
