@@ -229,4 +229,15 @@ RCT_EXPORT_METHOD(seekTo :(nonnull NSNumber *)reactTag: (nonnull NSNumber *)time
     }];
 }
 
+RCT_EXPORT_METHOD(showNextEpisode:(nonnull NSNumber *)reactTag: (nonnull NSDictionary *)nextEpisode) {
+    [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RNJWPlayerNativeView *> *viewRegistry) {
+        RNJWPlayerNativeView *view = viewRegistry[reactTag];
+        if (![view isKindOfClass:[RNJWPlayerNativeView class]] || view.player == nil) {
+            RCTLogError(@"Invalid view returned from registry, expecting RNJWPlayerNativeView, got: %@", view);
+        } else {
+            [view showNextEpisode:nextEpisode];
+        }
+    }];
+}
+
 @end

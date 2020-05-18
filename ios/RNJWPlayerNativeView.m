@@ -22,6 +22,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 {
     [[NSNotificationCenter defaultCenter] removeObserver:AudioInterruptionsStarted];
     [[NSNotificationCenter defaultCenter] removeObserver:AudioInterruptionsEnded];
+    [self stopTimer];
 }
 
 -(void)customStyle: (JWConfig*)config :(NSString*)name
@@ -329,8 +330,6 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     NSString *newFile = [playlistItem objectForKey:@"file"];
     
     if (newFile != nil && newFile.length > 0) {
-        [self reset];
-        
         JWConfig *config = [self setupConfig];
         
         if (_playerStyle) {
@@ -350,25 +349,35 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
             config.file = encodedUrl;
         }
         
+        NSMutableArray <JWPlaylistItem *> *playlistArray = [[NSMutableArray alloc] init];
+        JWPlaylistItem *plItem = [JWPlaylistItem new];
+        
         id mediaId = playlistItem[@"mediaId"];
         if ((mediaId != nil) && (mediaId != (id)[NSNull null])) {
             config.mediaId = mediaId;
+            plItem.mediaId = mediaId;
         }
         
         id title = playlistItem[@"title"];
         if ((title != nil) && (title != (id)[NSNull null])) {
             config.title = title;
+            plItem.title = title;
         }
         
         id desc = playlistItem[@"desc"];
         if ((desc != nil) && (desc != (id)[NSNull null])) {
             config.desc = desc;
+            plItem.desc = desc;
         }
         
         id image = playlistItem[@"image"];
         if ((image != nil) && (image != (id)[NSNull null])) {
             config.image = image;
+            plItem.image = image;
         }
+        
+        plItem.file = newFile;
+        [playlistArray addObject:plItem];
         
         id autostart = playlistItem[@"autostart"];
         if ((autostart != nil) && (autostart != (id)[NSNull null])) {
@@ -379,7 +388,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         if ((controls != nil) && (controls != (id)[NSNull null])) {
             config.controls = [controls boolValue];
         }
-
+        
         NSMutableArray <JWAdBreak *> *adsArray = [[NSMutableArray alloc] init];
         id ads = playlistItem[@"schedule"];
         if(ads != nil) {
@@ -402,16 +411,18 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
             config.advertising = advertising;
         }
         
-        _proxy = [RNJWPlayerDelegateProxy new];
-        _proxy.delegate = self;
-
+        if (_proxy == nil) {
+            _proxy = [RNJWPlayerDelegateProxy new];
+            _proxy.delegate = self;
+        }
         
+        if (_player == nil) {
+            _player = [[JWPlayerController alloc] initWithConfig:config delegate:_proxy];
+            _player.controls = YES;
+            [_player setFullscreen:true];
+        }
         
-        _player = [[JWPlayerController alloc] initWithConfig:config delegate:_proxy];
-        
-        _player.controls = [[playlistItem objectForKey:@"controls"] boolValue];
-        
-        [_player setFullscreen:true];
+        [_player load:playlistArray];
         
         [self setFullScreenOnLandscape:_fullScreenOnLandscape];
         [self setLandscapeOnFullScreen:_landscapeOnFullScreen];
@@ -492,9 +503,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         _proxy.delegate = self;
         
         _player = [[JWPlayerController alloc] initWithConfig:config delegate:_proxy];
-        
         _player.controls = YES;
-
         [_player setFullscreen:true];
         
         [self setFullScreenOnLandscape:_fullScreenOnLandscape];
@@ -504,10 +513,90 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     }
 }
 
+-(UIView *)createNextUpView:(NSDictionary *)episode
+{
+    NSString *title = [episode objectForKey:@"title"];
+    NSString *imgUrl = [episode objectForKey:@"image"];
+                    
+    UIView *nextUpView = [[NSBundle.mainBundle loadNibNamed:@"NextUpView" owner:self options:nil] objectAtIndex:0];
+    // get the size of the screen
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    CGFloat screenWidth = screenRect.size.width;
+    CGFloat screenHeight = screenRect.size.height;
+    CGRect frame = CGRectMake(0, 0, screenWidth, screenHeight);
+    // stretch the topmost container to the size of the entire screen
+    nextUpView.frame = frame;
+
+    // tags are set in xcode
+    UILabel *secondsLeftLabel = [nextUpView viewWithTag:1];
+    UIImageView *imgView = [nextUpView viewWithTag:2];
+    UILabel *titleLabel = [nextUpView viewWithTag:3];
+    UIButton *closeBtn = [nextUpView viewWithTag:6];
+    
+    // set image url
+    imgView.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:imgUrl]]];
+    [titleLabel setText:title];
+    self.secondsLeftLabel = secondsLeftLabel;
+    // register callback for button
+    [closeBtn addTarget:self action:@selector(closeNextUpView) forControlEvents:UIControlEventTouchUpInside];
+
+    return nextUpView;
+}
+
+-(void)showNextEpisode:(NSDictionary *)nextEpisode
+{
+    if (self.jwPlayerInternalView != nil) {
+        self.nextEpisode = nextEpisode;
+        UIView *nextUpView = [self createNextUpView:nextEpisode];
+        self.nextUpView = nextUpView;
+        [self.jwPlayerInternalView addSubview:nextUpView];
+        [self startTimer];
+    }
+}
+
+-(void)startTimer
+{
+    self.timerCount = 6;
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(onTimer) userInfo:nil repeats:YES];
+}
+
+-(void)onTimer
+{
+    self.timerCount--;
+    NSString *secondsLeft = [NSString stringWithFormat:@"%d", self.timerCount];
+    [self.secondsLeftLabel setText:secondsLeft];
+    if (self.timerCount == 0) {
+        [self closeNextUpView];
+        [self onNextEpisode];
+    }
+}
+
+-(void)stopTimer
+{
+    if (self.timer != nil) {
+        [self.timer invalidate];
+    }
+}
+
+-(void)onNextEpisode
+{
+    [self resetPlaylistItem];
+    [self setPlaylistItem:self.nextEpisode];
+}
+
+-(void)closeNextUpView
+{
+    [self stopTimer];
+    [self.nextUpView removeFromSuperview];
+}
+
 #pragma mark - RNJWPlayer Delegate
 
 -(void)onRNJWReady
 {
+    // save reference to the internal view of JW player for later use
+    UIView *jwPlayerInternalView = self.player.view.subviews[0];
+    self.jwPlayerInternalView = jwPlayerInternalView;
     if (self.onPlayerReady) {
         self.onPlayerReady(@{});
     }
@@ -727,9 +816,6 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         self.onAdPlay(@{});
     }
 }
-
-
-//-(void)onRN
 
 #pragma mark - RNJWPlayer Interruption handling
 
