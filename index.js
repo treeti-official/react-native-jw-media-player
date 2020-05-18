@@ -4,7 +4,7 @@ import {
   requireNativeComponent,
   UIManager,
   NativeModules,
-  Platform
+  Platform,
 } from "react-native";
 import PropTypes from "prop-types";
 
@@ -23,7 +23,7 @@ const JWPlayerStateIOS = {
   JWPlayerStateBuffering: 2,
   JWPlayerStateIdle: 3,
   JWPlayerStateComplete: 4,
-  JWPlayerStateError: 5
+  JWPlayerStateError: 5,
 };
 
 const JWPlayerStateAndroid = {
@@ -32,7 +32,7 @@ const JWPlayerStateAndroid = {
   JWPlayerStatePlaying: 2,
   JWPlayerStatePaused: 3,
   JWPlayerStateComplete: 4,
-  JWPlayerStateError: null
+  JWPlayerStateError: null,
 };
 
 export const JWPlayerState =
@@ -56,8 +56,8 @@ export default class JWPlayer extends Component {
       icons: PropTypes.string,
       timeslider: PropTypes.shape({
         progress: PropTypes.string,
-        rail: PropTypes.string
-      })
+        rail: PropTypes.string,
+      }),
     }),
     nativeFullScreen: PropTypes.bool,
     fullScreenOnLandscape: PropTypes.bool,
@@ -76,7 +76,7 @@ export default class JWPlayer extends Component {
           offset: PropTypes.string,
         })
       ),
-      nextUpOffset: PropTypes.number
+      nextUpOffset: PropTypes.number,
     }),
     playlist: PropTypes.arrayOf(
       PropTypes.shape({
@@ -87,7 +87,7 @@ export default class JWPlayer extends Component {
         time: PropTypes.number,
         mediaId: PropTypes.string.isRequired,
         autostart: PropTypes.bool.isRequired,
-        nextUpOffset: PropTypes.number
+        nextUpOffset: PropTypes.number,
       })
     ),
     onPlayerReady: PropTypes.func,
@@ -113,57 +113,91 @@ export default class JWPlayer extends Component {
     onPlaylistItem: PropTypes.func,
     onControlBarVisible: PropTypes.func,
     onAdPlay: PropTypes.func,
-    setFullscreen: PropTypes.func
+    setFullscreen: PropTypes.func,
+    showNextEpisode: PropTypes.func,
   };
 
+  showNextEpisode(playlistItem) {
+    if (RNJWPlayerManager)
+      RNJWPlayerManager.showNextEpisode(
+        this.getRNJWPlayerBridgeHandle(),
+        playlistItem
+      );
+  }
+
   pause() {
-    if (RNJWPlayerManager) RNJWPlayerManager.pause(this.getRNJWPlayerBridgeHandle());
+    if (RNJWPlayerManager)
+      RNJWPlayerManager.pause(this.getRNJWPlayerBridgeHandle());
   }
 
   play() {
-    if (RNJWPlayerManager) RNJWPlayerManager.play(this.getRNJWPlayerBridgeHandle());
+    if (RNJWPlayerManager)
+      RNJWPlayerManager.play(this.getRNJWPlayerBridgeHandle());
   }
 
   stop() {
-    if (RNJWPlayerManager) RNJWPlayerManager.stop(this.getRNJWPlayerBridgeHandle());
+    if (RNJWPlayerManager)
+      RNJWPlayerManager.stop(this.getRNJWPlayerBridgeHandle());
   }
 
   toggleSpeed() {
-    if (RNJWPlayerManager) RNJWPlayerManager.toggleSpeed(this.getRNJWPlayerBridgeHandle());
+    if (RNJWPlayerManager)
+      RNJWPlayerManager.toggleSpeed(this.getRNJWPlayerBridgeHandle());
   }
 
   setSpeed(speed) {
-    if (RNJWPlayerManager) RNJWPlayerManager.setSpeed(this.getRNJWPlayerBridgeHandle(), speed);
+    if (RNJWPlayerManager)
+      RNJWPlayerManager.setSpeed(this.getRNJWPlayerBridgeHandle(), speed);
   }
 
   setPlaylistIndex(index) {
-    if (RNJWPlayerManager) RNJWPlayerManager.setPlaylistIndex(this.getRNJWPlayerBridgeHandle(), index);
+    if (RNJWPlayerManager)
+      RNJWPlayerManager.setPlaylistIndex(
+        this.getRNJWPlayerBridgeHandle(),
+        index
+      );
   }
 
   setControls(show) {
-    if (RNJWPlayerManager) RNJWPlayerManager.setControls(this.getRNJWPlayerBridgeHandle(), show);
+    if (RNJWPlayerManager)
+      RNJWPlayerManager.setControls(this.getRNJWPlayerBridgeHandle(), show);
   }
 
   loadPlaylistItem(playlistItem) {
-    if (RNJWPlayerManager) RNJWPlayerManager.loadPlaylistItem(this.getRNJWPlayerBridgeHandle(), playlistItem);
+    if (RNJWPlayerManager)
+      RNJWPlayerManager.loadPlaylistItem(
+        this.getRNJWPlayerBridgeHandle(),
+        playlistItem
+      );
   }
 
   loadPlaylist(playlist) {
-    if (RNJWPlayerManager) RNJWPlayerManager.loadPlaylist(this.getRNJWPlayerBridgeHandle(), playlist);
+    if (RNJWPlayerManager)
+      RNJWPlayerManager.loadPlaylist(
+        this.getRNJWPlayerBridgeHandle(),
+        playlist
+      );
   }
 
   seekTo(time) {
-    if (RNJWPlayerManager) RNJWPlayerManager.seekTo(this.getRNJWPlayerBridgeHandle(), time);
+    if (RNJWPlayerManager)
+      RNJWPlayerManager.seekTo(this.getRNJWPlayerBridgeHandle(), time);
   }
 
   setFullscreen(fullscreen) {
-    if (RNJWPlayerManager) RNJWPlayerManager.setFullscreen(this.getRNJWPlayerBridgeHandle(), fullscreen);
+    if (RNJWPlayerManager)
+      RNJWPlayerManager.setFullscreen(
+        this.getRNJWPlayerBridgeHandle(),
+        fullscreen
+      );
   }
 
   async position() {
     if (RNJWPlayerManager) {
       try {
-        var position = await RNJWPlayerManager.position(this.getRNJWPlayerBridgeHandle());
+        var position = await RNJWPlayerManager.position(
+          this.getRNJWPlayerBridgeHandle()
+        );
         return position;
       } catch (e) {
         console.error(e);
@@ -175,7 +209,9 @@ export default class JWPlayer extends Component {
   async playerState() {
     if (RNJWPlayerManager) {
       try {
-        var state = await RNJWPlayerManager.state(this.getRNJWPlayerBridgeHandle());
+        var state = await RNJWPlayerManager.state(
+          this.getRNJWPlayerBridgeHandle()
+        );
         return state;
       } catch (e) {
         console.error(e);
@@ -202,7 +238,7 @@ export default class JWPlayer extends Component {
       displayDesc,
       nextUpDisplay,
       playlistItem,
-      playlist
+      playlist,
     } = nextProps;
 
     if (
