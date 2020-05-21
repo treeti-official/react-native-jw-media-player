@@ -303,22 +303,23 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
         @Override
         public void onFullscreenRequested() {
-            // Destroy the player's rendering surface, we need to do this to prevent Android's
-            // MediaDecoders from crashing.
-            mPlayer.destroySurface();
-
-            mPlayerContainer = (ViewGroup) mPlayer.getParent();
-
-            // Remove the JWPlayerView from the list item.
-            mPlayerContainer.removeView(mPlayer);
-
-            // Initialize a new rendering surface.
-            mPlayer.initializeSurface();
 
             // Add the JWPlayerView to the RootView as soon as the UI thread is ready.
             mRootView.post(new Runnable() {
                 @Override
                 public void run() {
+                    // Destroy the player's rendering surface, we need to do this to prevent Android's
+                    // MediaDecoders from crashing.
+                    // mPlayer.destroySurface();
+
+                    mPlayerContainer = (ViewGroup) mPlayer.getParent();
+
+                    // Remove the JWPlayerView from the list item.
+                    mPlayerContainer.removeView(mPlayer);
+
+                    // Initialize a new rendering surface.
+                    // mPlayer.initializeSurface();
+
                     mRootView.addView(mPlayer, new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
@@ -343,7 +344,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
         public void onFullscreenExitRequested() {
             // Destroy the surface that is used for video output, we need to do this before
             // we can detach the JWPlayerView from a ViewGroup.
-            mPlayer.destroySurface();
+            //   mPlayer.destroySurface();
 
             // Remove the player view from the root ViewGroup.
             if (mPlayer.getParent() != null) {
@@ -351,7 +352,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             }
 
             // After we've detached the JWPlayerView we can safely reinitialize the surface.
-            mPlayer.initializeSurface();
+            // mPlayer.initializeSurface();
 
             // handling of orientation and ui visibility must be done outside the runnable
             // otherwise the handlers are not called when closing player through alert
