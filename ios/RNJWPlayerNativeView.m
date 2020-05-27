@@ -423,6 +423,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         }
         
         [_player load:playlistArray];
+        [self.player play];
         
         [self setFullScreenOnLandscape:_fullScreenOnLandscape];
         [self setLandscapeOnFullScreen:_landscapeOnFullScreen];
@@ -535,12 +536,23 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     
     // set image url
     imgView.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:imgUrl]]];
+    UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(nextEpisodeClick)];
+    singleTap.numberOfTapsRequired = 1;
+    [imgView setUserInteractionEnabled:YES];
+    [imgView addGestureRecognizer:singleTap];
+    
     [titleLabel setText:title];
     self.secondsLeftLabel = secondsLeftLabel;
     // register callback for button
     [closeBtn addTarget:self action:@selector(closeNextUpView) forControlEvents:UIControlEventTouchUpInside];
 
     return nextUpView;
+}
+
+-(void)nextEpisodeClick {
+    [self stopTimer];
+    [self closeNextUpView];
+    [self onNextEpisode];
 }
 
 -(void)showNextEpisode:(NSDictionary *)nextEpisode
@@ -556,7 +568,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 
 -(void)startTimer
 {
-    self.timerCount = 6;
+    self.timerCount = 5;
     self.timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(onTimer) userInfo:nil repeats:YES];
 }
 
