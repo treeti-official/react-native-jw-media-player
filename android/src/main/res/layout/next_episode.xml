@@ -5,9 +5,10 @@
     android:id="@+id/next_episode_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:alpha="0.9"
+    android:alpha="0.8"
     android:animateLayoutChanges="false"
     android:background="#000000"
+    android:clickable="false"
     android:orientation="horizontal"
     android:padding="10pt">
 

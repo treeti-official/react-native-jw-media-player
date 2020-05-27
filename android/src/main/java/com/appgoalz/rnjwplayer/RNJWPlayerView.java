@@ -13,6 +13,7 @@ import android.provider.SyncStateContract;
 import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -415,18 +416,18 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
     }
 
     public void showNextEpisode(final ReadableMap playlistItem) {
+        mNextEpisodeLayout.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return true;
+            }
+        });
+
         TextView title = mNextEpisodeLayout.findViewById(R.id.title);
         title.setText(playlistItem.hasKey("title") ? playlistItem.getString("title") : "");
 
         TextView desc = mNextEpisodeLayout.findViewById(R.id.description);
         desc.setText(playlistItem.hasKey("desc") ? playlistItem.getString("desc") : "");
-
-        if (playlistItem.hasKey("image")) {
-            ImageView img = mNextEpisodeLayout.findViewById(R.id.image);
-            new DownloadImageTask(img).execute(playlistItem.getString("image"));
-        }
-
-        mRootView.addView(mNextEpisodeLayout);
 
         final CountDownTimer countDown = new CountDownTimer(6000, 1000) {
             public void onTick(long millisUntilFinished) {
@@ -440,6 +441,22 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                 setPlaylistItem(playlistItem);
             }
         }.start();
+
+        if (playlistItem.hasKey("image")) {
+            ImageView img = mNextEpisodeLayout.findViewById(R.id.image);
+            img.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    countDown.cancel();
+                    mRootView.removeView(mNextEpisodeLayout);
+                    resetPlaylistItem();
+                    setPlaylistItem(playlistItem);
+                }
+            });
+            new DownloadImageTask(img).execute(playlistItem.getString("image"));
+        }
+
+        mRootView.addView(mNextEpisodeLayout);
 
         ImageButton closeBtn = mNextEpisodeLayout.findViewById(R.id.closeBtn);
         closeBtn.setOnClickListener(new View.OnClickListener() {

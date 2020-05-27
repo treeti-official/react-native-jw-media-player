@@ -536,12 +536,23 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     
     // set image url
     imgView.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:imgUrl]]];
+    UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(nextEpisodeClick)];
+    singleTap.numberOfTapsRequired = 1;
+    [imgView setUserInteractionEnabled:YES];
+    [imgView addGestureRecognizer:singleTap];
+    
     [titleLabel setText:title];
     self.secondsLeftLabel = secondsLeftLabel;
     // register callback for button
     [closeBtn addTarget:self action:@selector(closeNextUpView) forControlEvents:UIControlEventTouchUpInside];
 
     return nextUpView;
+}
+
+-(void)nextEpisodeClick {
+    [self stopTimer];
+    [self closeNextUpView];
+    [self onNextEpisode];
 }
 
 -(void)showNextEpisode:(NSDictionary *)nextEpisode
