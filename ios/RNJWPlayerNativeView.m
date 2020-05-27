@@ -423,6 +423,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         }
         
         [_player load:playlistArray];
+        [self.player play];
         
         [self setFullScreenOnLandscape:_fullScreenOnLandscape];
         [self setLandscapeOnFullScreen:_landscapeOnFullScreen];
@@ -556,7 +557,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 
 -(void)startTimer
 {
-    self.timerCount = 6;
+    self.timerCount = 5;
     self.timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(onTimer) userInfo:nil repeats:YES];
 }
 

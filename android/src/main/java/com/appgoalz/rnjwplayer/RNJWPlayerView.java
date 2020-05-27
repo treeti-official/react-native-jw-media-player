@@ -303,11 +303,14 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
         @Override
         public void onFullscreenRequested() {
-
             // Add the JWPlayerView to the RootView as soon as the UI thread is ready.
             mRootView.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (mFullscreenPlayer != null) {
+                        return;
+                    }
+
                     // Destroy the player's rendering surface, we need to do this to prevent Android's
                     // MediaDecoders from crashing.
                     // mPlayer.destroySurface();
@@ -425,15 +428,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
         mRootView.addView(mNextEpisodeLayout);
 
-        ImageButton closeBtn = mNextEpisodeLayout.findViewById(R.id.closeBtn);
-        closeBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mRootView.removeView(mNextEpisodeLayout);
-            }
-        });
-
-        new CountDownTimer(6000, 1000) {
+        final CountDownTimer countDown = new CountDownTimer(6000, 1000) {
             public void onTick(long millisUntilFinished) {
                 TextView counter = mNextEpisodeLayout.findViewById(R.id.counter);
                 counter.setText(millisUntilFinished / 1000 + " seconds");
@@ -445,6 +440,16 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                 setPlaylistItem(playlistItem);
             }
         }.start();
+
+        ImageButton closeBtn = mNextEpisodeLayout.findViewById(R.id.closeBtn);
+        closeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                countDown.cancel();
+                mRootView.removeView(mNextEpisodeLayout);
+            }
+        });
+
     };
 
     
@@ -535,14 +540,14 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                                 addView(mPlayer);
 
                                 setupPlayerView();
-                                mPlayer.setFullscreen(true, true);
-                            }
 
-                            if (playlistItem.hasKey("autostart")) {
-                                mPlayer.getConfig().setAutostart(playlistItem.getBoolean("autostart"));
+                                if (playlistItem.hasKey("autostart")) {
+                                    mPlayer.getConfig().setAutostart(playlistItem.getBoolean("autostart"));
+                                }
                             }
 
                             mPlayer.load(newPlayListItem);
+                            mPlayer.setFullscreen(true, false);
 
                             if (autostart) {
                                 mPlayer.play();
