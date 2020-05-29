@@ -393,11 +393,6 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         if((time != nil) && (time != (id)[NSNull null])) {
             plItem.startTime = [time floatValue];
         }
-
-        id time = playlistItem[@"time"];
-        if((time != nil) && (time != (id)[NSNull null])) {
-            config.time = [time intValue];
-        }
         
         NSMutableArray <JWAdBreak *> *adsArray = [[NSMutableArray alloc] init];
         id ads = playlistItem[@"schedule"];
