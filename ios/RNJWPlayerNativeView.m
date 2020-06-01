@@ -389,6 +389,11 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
             config.controls = [controls boolValue];
         }
         
+        id time = playlistItem[@"time"];
+        if((time != nil) && (time != (id)[NSNull null])) {
+            plItem.startTime = [time floatValue];
+        }
+        
         NSMutableArray <JWAdBreak *> *adsArray = [[NSMutableArray alloc] init];
         id ads = playlistItem[@"schedule"];
         if(ads != nil) {
@@ -483,6 +488,11 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
             id image = item[@"image"];
             if ((image != nil) && (image != (id)[NSNull null])) {
                 playListItem.image = image;
+            }
+            
+            id time = item[@"time"];
+            if((time != nil) && (time != (id)[NSNull null])) {
+                playListItem.startTime = [time floatValue];
             }
             
             [playlistArray addObject:playListItem];

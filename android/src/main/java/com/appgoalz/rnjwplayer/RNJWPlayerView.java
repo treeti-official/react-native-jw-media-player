@@ -109,6 +109,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
     String desc = "";
     String mediaId = "";
     String customStyle;
+    double time = 0;
 
     Boolean autostart = true;
     Boolean controls = true;
@@ -469,7 +470,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
     };
 
-    
+
     public void setPlaylistItem(ReadableMap prop) {
         if(playlistItem != prop) {
             playlistItem = prop;
@@ -501,6 +502,10 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
                             if (playlistItem.hasKey("mediaId")) {
                                 newPlayListItem.setMediaId(playlistItem.getString("mediaId"));
+                            }
+
+                            if (playlistItem.hasKey("time")) {
+                                newPlayListItem.setStartTime(playlistItem.getDouble("time"));
                             }
 
                             SkinConfig skinConfig;
@@ -618,6 +623,10 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                             mediaId = playlistItem.getString("mediaId");
                         }
 
+                        if (playlistItem.hasKey("time")) {
+                            time = playlistItem.getDouble("time");
+                        }
+
                         List<AdBreak> adSchedule = new ArrayList();
 
                         if (playlistItem.hasKey("advertisement")) {
@@ -640,6 +649,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                                 .description(desc)
                                 .image(image)
                                 .mediaId(mediaId)
+                                .startTime(time)
                                 .build();
 
                         mPlayList.add(newPlayListItem);
