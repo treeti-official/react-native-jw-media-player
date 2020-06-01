@@ -490,6 +490,11 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
                 playListItem.image = image;
             }
             
+            id time = item[@"time"];
+            if((time != nil) && (time != (id)[NSNull null])) {
+                playListItem.startTime = [time floatValue];
+            }
+            
             [playlistArray addObject:playListItem];
         }
         
