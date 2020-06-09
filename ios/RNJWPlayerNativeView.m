@@ -527,6 +527,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 -(UIView *)createNextUpView:(NSDictionary *)episode
 {
     NSString *title = [episode objectForKey:@"title"];
+    NSString *nextEpisodeTitle = [episode objectForKey:@"nextEpisodeTitle"];
     NSString *imgUrl = [episode objectForKey:@"image"];
                     
     UIView *nextUpView = [[NSBundle.mainBundle loadNibNamed:@"NextUpView" owner:self options:nil] objectAtIndex:0];
@@ -543,6 +544,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     UIImageView *imgView = [nextUpView viewWithTag:2];
     UILabel *titleLabel = [nextUpView viewWithTag:3];
     UIButton *closeBtn = [nextUpView viewWithTag:6];
+    UILabel *nextEpisodeLabel = [nextUpView viewWithTag:7];
     
     // set image url
     imgView.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:imgUrl]]];
@@ -552,6 +554,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     [imgView addGestureRecognizer:singleTap];
     
     [titleLabel setText:title];
+    [nextEpisodeLabel setText:nextEpisodeTitle];
     self.secondsLeftLabel = secondsLeftLabel;
     // register callback for button
     [closeBtn addTarget:self action:@selector(closeNextUpView) forControlEvents:UIControlEventTouchUpInside];
