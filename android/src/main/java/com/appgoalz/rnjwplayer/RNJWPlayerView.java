@@ -430,6 +430,11 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
         TextView desc = mNextEpisodeLayout.findViewById(R.id.description);
         desc.setText(playlistItem.hasKey("desc") ? playlistItem.getString("desc") : "");
 
+        if (playlistItem.hasKey("nextEpisodeTitle")) {
+            TextView next = mNextEpisodeLayout.findViewById(R.id.next);
+            next.setText(playlistItem.getString("nextEpisodeTitle"));
+        }
+
         final CountDownTimer countDown = new CountDownTimer(6000, 1000) {
             public void onTick(long millisUntilFinished) {
                 TextView counter = mNextEpisodeLayout.findViewById(R.id.counter);
