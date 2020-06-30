@@ -328,10 +328,10 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 -(void)setPlaylistItem:(NSDictionary *)playlistItem
 {
     NSString *newFile = [playlistItem objectForKey:@"file"];
-    
+
     if (newFile != nil && newFile.length > 0) {
         JWConfig *config = [self setupConfig];
-        
+
         if (_playerStyle) {
             [self customStyle:config :_playerStyle];
         } else if ([playlistItem objectForKey:@"playerStyle"]) {
@@ -339,61 +339,55 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         } else if (_playerColors != nil) {
              [self setupColors:config];
         }
-        
-        NSURL* url = [NSURL URLWithString:newFile];
-        if (url && url.scheme && url.host) {
-            config.file = newFile;
-        } else {
-            NSString* encodedUrl = [newFile stringByAddingPercentEscapesUsingEncoding:
-            NSUTF8StringEncoding];
-            config.file = encodedUrl;
-        }
-        
+
         NSMutableArray <JWPlaylistItem *> *playlistArray = [[NSMutableArray alloc] init];
         JWPlaylistItem *plItem = [JWPlaylistItem new];
-        
+
         id mediaId = playlistItem[@"mediaId"];
         if ((mediaId != nil) && (mediaId != (id)[NSNull null])) {
             config.mediaId = mediaId;
             plItem.mediaId = mediaId;
         }
-        
+
         id title = playlistItem[@"title"];
         if ((title != nil) && (title != (id)[NSNull null])) {
             config.title = title;
             plItem.title = title;
         }
-        
+
         id desc = playlistItem[@"desc"];
         if ((desc != nil) && (desc != (id)[NSNull null])) {
             config.desc = desc;
             plItem.desc = desc;
         }
-        
+
         id image = playlistItem[@"image"];
         if ((image != nil) && (image != (id)[NSNull null])) {
             config.image = image;
             plItem.image = image;
         }
-        
+
         plItem.file = newFile;
         [playlistArray addObject:plItem];
-        
+        // add playlist to config, otherwise start time is ignored
+        // see https://nuuvuu.atlassian.net/browse/FSB-1770
+        config.playlist = playlistArray;
+
         id autostart = playlistItem[@"autostart"];
         if ((autostart != nil) && (autostart != (id)[NSNull null])) {
             config.autostart = [autostart boolValue];
         }
-        
+
         id controls = playlistItem[@"controls"];
         if ((controls != nil) && (controls != (id)[NSNull null])) {
             config.controls = [controls boolValue];
         }
-        
+
         id time = playlistItem[@"time"];
         if((time != nil) && (time != (id)[NSNull null])) {
             plItem.startTime = [time floatValue];
         }
-        
+
         NSMutableArray <JWAdBreak *> *adsArray = [[NSMutableArray alloc] init];
         id ads = playlistItem[@"schedule"];
         if(ads != nil) {
@@ -415,24 +409,26 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
             advertising.schedule = adsArray;
             config.advertising = advertising;
         }
-        
+
         if (_proxy == nil) {
             _proxy = [RNJWPlayerDelegateProxy new];
             _proxy.delegate = self;
         }
-        
+
         if (_player == nil) {
             _player = [[JWPlayerController alloc] initWithConfig:config delegate:_proxy];
             _player.controls = YES;
             [_player setFullscreen:true];
+        } else {
+            // reload playlist item if handling next episode
+            [_player load:playlistArray];
         }
         
-        [_player load:playlistArray];
         [self.player play];
-        
+
         [self setFullScreenOnLandscape:_fullScreenOnLandscape];
         [self setLandscapeOnFullScreen:_landscapeOnFullScreen];
-        
+
         [self addSubview:self.player.view];
     }
 }
