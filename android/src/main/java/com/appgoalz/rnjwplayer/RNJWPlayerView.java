@@ -39,7 +39,7 @@ import com.longtailvideo.jwplayer.core.PlayerState;
 import com.longtailvideo.jwplayer.events.AudioTrackChangedEvent;
 import com.longtailvideo.jwplayer.events.AudioTracksEvent;
 import com.longtailvideo.jwplayer.events.BeforeCompleteEvent;
-import com.longtailvideo.jwplayer.events.BeforePlayEvent;
+import com.longtailvideo.jwplayer.events.AdImpressionEvent;
 import com.longtailvideo.jwplayer.events.BufferEvent;
 import com.longtailvideo.jwplayer.events.CompleteEvent;
 import com.longtailvideo.jwplayer.events.ControlBarVisibilityEvent;
@@ -93,7 +93,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
         VideoPlayerEvents.OnControlBarVisibilityListener,
         VideoPlayerEvents.OnDisplayClickListener,
         VideoPlayerEvents.OnFirstFrameListener,
-        AdvertisingEvents.OnBeforePlayListener,
+        AdvertisingEvents.OnAdImpressionListener,
         AdvertisingEvents.OnBeforeCompleteListener,
         AudioManager.OnAudioFocusChangeListener {
     public RNJWPlayer mPlayer = null;
@@ -237,7 +237,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                     mPlayer.removeOnPlaylistItemListener(player);
                     mPlayer.removeOnPlaylistCompleteListener(player);
                     mPlayer.removeOnFirstFrameListener(player);
-                    mPlayer.removeOnBeforePlayListener(player);
+                    mPlayer.removeOnAdImpressionListener(player);
                     mPlayer.removeOnBeforeCompleteListener(player);
                     mPlayer.removeOnControlsListener(player);
                     mPlayer.removeOnControlBarVisibilityListener(player);
@@ -280,7 +280,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             mPlayer.addOnPlaylistItemListener(this);
             mPlayer.addOnPlaylistCompleteListener(this);
             mPlayer.addOnFirstFrameListener(this);
-            mPlayer.addOnBeforePlayListener(this);
+            mPlayer.addOnAdImpressionListener(this);
             mPlayer.addOnBeforeCompleteListener(this);
             mPlayer.addOnControlsListener(this);
             mPlayer.addOnControlBarVisibilityListener(this);
@@ -776,7 +776,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
     }
 
     @Override
-    public void onBeforePlay(BeforePlayEvent beforePlayEvent) {
+    public void onAdImpression(AdImpressionEvent adImpressionEvent) {
         WritableMap event = Arguments.createMap();
         event.putString("message", "onAdPlay");
         getReactContext().getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "topAdStarted", event);
