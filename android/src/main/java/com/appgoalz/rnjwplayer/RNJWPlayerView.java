@@ -319,14 +319,12 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
 
                     mPlayerContainer = (ViewGroup) mPlayer.getParent();
 
-                    // exit early if mPlayerContainer was not found
+                    // prevent NullPointerException
                     // see https://nuuvuu.atlassian.net/browse/FSB-1938
-                    if (mPlayerContainer == null) {
-                        return;
+                    if (mPlayerContainer != null) {
+                        // Remove the JWPlayerView from the list item.
+                        mPlayerContainer.removeView(mPlayer);
                     }
-
-                    // Remove the JWPlayerView from the list item.
-                    mPlayerContainer.removeView(mPlayer);
 
                     // Initialize a new rendering surface.
                     // mPlayer.initializeSurface();
