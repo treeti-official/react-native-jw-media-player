@@ -63,7 +63,6 @@ import com.longtailvideo.jwplayer.fullscreen.FullscreenHandler;
 import com.longtailvideo.jwplayer.media.playlists.PlaylistItem;
 import com.longtailvideo.jwplayer.media.ads.AdBreak;
 import com.longtailvideo.jwplayer.media.ads.AdSource;
-import com.longtailvideo.jwplayer.media.ads.Advertising;
 import com.longtailvideo.jwplayer.media.ads.VMAPAdvertising;
 
 import org.w3c.dom.Text;
