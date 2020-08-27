@@ -77,6 +77,7 @@ export default class JWPlayer extends Component {
         })
       ),
       nextUpOffset: PropTypes.number,
+      vmapUrl: PropTypes.string,
     }),
     playlist: PropTypes.arrayOf(
       PropTypes.shape({

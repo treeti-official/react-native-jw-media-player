@@ -63,6 +63,8 @@ import com.longtailvideo.jwplayer.fullscreen.FullscreenHandler;
 import com.longtailvideo.jwplayer.media.playlists.PlaylistItem;
 import com.longtailvideo.jwplayer.media.ads.AdBreak;
 import com.longtailvideo.jwplayer.media.ads.AdSource;
+import com.longtailvideo.jwplayer.media.ads.Advertising;
+import com.longtailvideo.jwplayer.media.ads.VMAPAdvertising;
 
 import org.w3c.dom.Text;
 
@@ -532,7 +534,12 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                                 autostart = playlistItem.getBoolean("autostart");
                             }
 
-                            if (playlistItem.hasKey("schedule")) {
+                            VMAPAdvertising advertising = null;
+
+                            // schedule will be ignored if vmap is provided
+                            if (playlistItem.hasKey("vmapUrl")) {
+                                advertising = new VMAPAdvertising(AdSource.VAST, playlistItem.getString("vmapUrl"));
+                            } else if (playlistItem.hasKey("schedule")) {
                                 ReadableArray ad = playlistItem.getArray("schedule");
 
                                 List<AdBreak> adSchedule = new ArrayList();
@@ -576,8 +583,10 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                                     mPlayer.getConfig().setAutostart(playlistItem.getBoolean("autostart"));
                                 }
                             }
-
-                            mPlayer.load(newPlayListItem);
+                            // we need to load playlist to use vmap
+                            List<PlaylistItem> playlist = new ArrayList<PlaylistItem>();
+                            playlist.add(newPlayListItem);
+                            mPlayer.load(playlist, advertising);
                             mPlayer.setFullscreen(true, false);
 
                             if (autostart) {
