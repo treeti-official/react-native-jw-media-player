@@ -9,12 +9,12 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 
 - (id)init {
     self = [super init];
-    
+
     if (self) {
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioInterruptionsStarted:) name:AudioInterruptionsStarted object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioInterruptionsEnded:) name:AudioInterruptionsEnded object:nil];
     }
-    
+
     return self;
 }
 
@@ -28,10 +28,10 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 -(void)customStyle: (JWConfig*)config :(NSString*)name
 {
     config.stretching = JWStretchingUniform;
-    
+
     JWSkinStyling *skinStyling = [JWSkinStyling new];
     config.skin = skinStyling;
-    
+
     skinStyling.url = [NSString stringWithFormat:@"file://%@", [[NSBundle mainBundle] pathForResource:name ofType:@"css"]];
     skinStyling.name = name;
 }
@@ -39,33 +39,33 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 -(UIColor*)colorWithHexString:(NSString*)hex
 {
     NSString *cString = [[hex stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
-    
+
     // String should be 6 or 8 characters
     if ([cString length] < 6) return [UIColor grayColor];
-    
+
     // strip 0X if it appears
     if ([cString hasPrefix:@"0X"]) cString = [cString substringFromIndex:2];
-    
+
     if ([cString length] != 6) return  [UIColor grayColor];
-    
+
     // Separate into r, g, b substrings
     NSRange range;
     range.location = 0;
     range.length = 2;
     NSString *rString = [cString substringWithRange:range];
-    
+
     range.location = 2;
     NSString *gString = [cString substringWithRange:range];
-    
+
     range.location = 4;
     NSString *bString = [cString substringWithRange:range];
-    
+
     // Scan values
     unsigned int r, g, b;
     [[NSScanner scannerWithString:rString] scanHexInt:&r];
     [[NSScanner scannerWithString:gString] scanHexInt:&g];
     [[NSScanner scannerWithString:bString] scanHexInt:&b];
-    
+
     return [UIColor colorWithRed:((float) r / 255.0f)
                            green:((float) g / 255.0f)
                             blue:((float) b / 255.0f)
@@ -80,7 +80,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 -(void)setFullScreenOnLandscape:(BOOL)fullScreenOnLandscape
 {
     _fullScreenOnLandscape = fullScreenOnLandscape;
-    
+
     if (_player) {
         _player.forceFullScreenOnLandscape = fullScreenOnLandscape;
     }
@@ -89,7 +89,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 -(void)setLandscapeOnFullScreen:(BOOL)landscapeOnFullScreen
 {
     _landscapeOnFullScreen = landscapeOnFullScreen;
-    
+
     if (_player) {
         _player.forceLandscapeOnFullScreen = landscapeOnFullScreen;
     }
@@ -99,7 +99,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 {
     if (colors != nil) {
         _playerColors = colors;
-        
+
         if (_player != nil) {
             [self setupColors:_player.config];
         }
@@ -110,33 +110,33 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 {
     if (_playerColors != nil) {
         config.stretching = JWStretchingUniform;
-        
+
         JWSkinStyling *skinStyling = [JWSkinStyling new];
         config.skin = skinStyling;
-        
+
         if ([_playerColors objectForKey:@"icons"] != nil) {
             id icons = [_playerColors objectForKey:@"icons"];
-            
+
             JWControlbarStyling *controlbarStyling = [JWControlbarStyling new];
             controlbarStyling.icons = [self colorWithHexString:icons];
             skinStyling.controlbar = controlbarStyling;
         }
-        
+
         if ([_playerColors objectForKey:@"timeslider"] != nil) {
             JWTimesliderStyling *timesliderStyling = [JWTimesliderStyling new];
-            
+
             id timeslider = [_playerColors objectForKey:@"timeslider"];
-            
+
             if ([timeslider objectForKey:@"progress"] != nil) {
                 id progress = [timeslider objectForKey:@"progress"];
                 timesliderStyling.progress = [self colorWithHexString:progress];
             }
-            
+
             if ([timeslider objectForKey:@"rail"] != nil) {
                 id rail = [timeslider objectForKey:@"rail"];
                 timesliderStyling.rail = [self colorWithHexString:rail];
             }
-            
+
             skinStyling.timeslider = timesliderStyling;
         }
     }
@@ -145,12 +145,12 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 -(JWConfig*)setupConfig
 {
     JWConfig *config = [JWConfig new];
-    
+
     config.controls = YES;
     config.repeat = NO;
     config.displayDescription = YES;
     config.displayTitle = YES;
-    
+
     return config;
 }
 
@@ -297,11 +297,11 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 -(void)layoutSubviews
 {
     [super layoutSubviews];
-    
+
     if (self.player != nil) {
         self.player.view.frame = self.frame;
     }
-    
+
     if (_initFrame.size.height == 0) {
         _initFrame = self.frame;
     }
@@ -320,7 +320,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 {
     [[NSNotificationCenter defaultCenter] removeObserver:AudioInterruptionsStarted];
     [[NSNotificationCenter defaultCenter] removeObserver:AudioInterruptionsEnded];
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioInterruptionsStarted:) name:AudioInterruptionsStarted object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioInterruptionsEnded:) name:AudioInterruptionsEnded object:nil];
 }
@@ -402,9 +402,14 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
             }
         }
 
-        if(adsArray.count > 0) {
+        id vmapUrl = playlistItem[@"vmapUrl"];
+
+        // as per JW doc: if you set both an adVmap and an ad schedule, the schedule array will be ignored.
+        // however vmap is not working at the moment: https://github.com/chaimPaneth/react-native-jw-media-player/issues/86
+        if(adsArray.count > 0 || vmapUrl != nil) {
             JWAdConfig* advertising = [JWAdConfig new];
             advertising.client = JWAdClientVast;
+            advertising.adVmap = vmapUrl;
 
             advertising.schedule = adsArray;
             config.advertising = advertising;
@@ -423,7 +428,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
             // reload playlist item if handling next episode
             [_player load:playlistArray];
         }
-        
+
         [self.player play];
 
         [self setFullScreenOnLandscape:_fullScreenOnLandscape];
@@ -448,15 +453,15 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
 {
     if (playlist != nil && playlist.count > 0) {
         [self reset];
-        
+
         self.originalPlaylist = playlist;
-        
+
         NSMutableArray <JWPlaylistItem *> *playlistArray = [[NSMutableArray alloc] init];
         for (id item in playlist) {
             JWPlaylistItem *playListItem = [JWPlaylistItem new];
-            
+
             NSString *newFile = [item objectForKey:@"file"];
-            
+
             NSURL* url = [NSURL URLWithString:newFile];
             if (url && url.scheme && url.host) {
                 playListItem.file = newFile;
@@ -465,57 +470,57 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
                 NSUTF8StringEncoding];
                 playListItem.file = encodedUrl;
             }
-            
+
             id mediaId = item[@"mediaId"];
             if ((mediaId != nil) && (mediaId != (id)[NSNull null])) {
                 playListItem.mediaId = mediaId;
             }
-            
+
             id title = item[@"title"];
             if ((title != nil) && (title != (id)[NSNull null])) {
                 playListItem.title = title;
             }
-            
+
             id desc = item[@"desc"];
             if ((desc != nil) && (desc != (id)[NSNull null])) {
                 playListItem.desc = desc;
             }
-            
+
             id image = item[@"image"];
             if ((image != nil) && (image != (id)[NSNull null])) {
                 playListItem.image = image;
             }
-            
+
             id time = item[@"time"];
             if((time != nil) && (time != (id)[NSNull null])) {
                 playListItem.startTime = [time floatValue];
             }
-            
+
             [playlistArray addObject:playListItem];
         }
-        
+
         JWConfig *config = [self setupConfig];
-        
+
         if (_playerStyle != nil) {
             [self customStyle:config :_playerStyle];
         } else if (_playerColors != nil) {
             [self setupColors:config];
         }
-        
+
         config.autostart = [[playlist[0] objectForKey:@"autostart"] boolValue];
         config.nextupOffset = [[playlist[0] objectForKey:@"nextUpOffset"] intValue];
         config.playlist = playlistArray;
-        
+
         _proxy = [RNJWPlayerDelegateProxy new];
         _proxy.delegate = self;
-        
+
         _player = [[JWPlayerController alloc] initWithConfig:config delegate:_proxy];
         _player.controls = YES;
         [_player setFullscreen:true];
-        
+
         [self setFullScreenOnLandscape:_fullScreenOnLandscape];
         [self setLandscapeOnFullScreen:_landscapeOnFullScreen];
-                
+
         [self addSubview:self.player.view];
     }
 }
@@ -525,7 +530,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     NSString *title = [episode objectForKey:@"title"];
     NSString *nextEpisodeTitle = [episode objectForKey:@"nextEpisodeTitle"];
     NSString *imgUrl = [episode objectForKey:@"image"];
-                    
+
     UIView *nextUpView = [[NSBundle.mainBundle loadNibNamed:@"NextUpView" owner:self options:nil] objectAtIndex:0];
     // get the size of the screen
     CGRect screenRect = [[UIScreen mainScreen] bounds];
@@ -541,14 +546,14 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     UILabel *titleLabel = [nextUpView viewWithTag:3];
     UIButton *closeBtn = [nextUpView viewWithTag:6];
     UILabel *nextEpisodeLabel = [nextUpView viewWithTag:7];
-    
+
     // set image url
     imgView.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:imgUrl]]];
     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(nextEpisodeClick)];
     singleTap.numberOfTapsRequired = 1;
     [imgView setUserInteractionEnabled:YES];
     [imgView addGestureRecognizer:singleTap];
-    
+
     [titleLabel setText:title];
     [nextEpisodeLabel setText:nextEpisodeTitle];
     self.secondsLeftLabel = secondsLeftLabel;
@@ -671,7 +676,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     index = [NSNumber numberWithInteger: event.index];
     NSNumber *nextUpOffset;
     nextUpOffset = [[self.originalPlaylist objectAtIndex:event.index] valueForKey:@"nextUpOffset"];
-            
+
     if (nextUpOffset != nil) {
         self.player.config.nextupOffset = [nextUpOffset intValue];
     }
@@ -682,32 +687,32 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         NSString *mediaId = @"";
         NSString *title = @"";
         NSString *desc = @"";
-        
+
         if (event.item.file != nil) {
             file = event.item.file;
         }
-        
+
         if (event.item.mediaId != nil) {
             mediaId = event.item.mediaId;
         }
-        
+
         if (event.item.title != nil) {
             title = event.item.title;
         }
-        
+
         if (event.item.desc != nil) {
             desc = event.item.desc;
         }
-        
+
         NSMutableDictionary *playListItemDict = [[NSMutableDictionary alloc] init];
         [playListItemDict setObject:file forKey:@"file"];
         [playListItemDict setObject:mediaId forKey:@"mediaId"];
         [playListItemDict setObject:title forKey:@"title"];
         [playListItemDict setObject:desc forKey:@"desc"];
         [playListItemDict setObject:index forKey:@"index"];
-        
+
         NSData *data = [NSJSONSerialization dataWithJSONObject:playListItemDict options:NSJSONWritingPrettyPrinted error: &error];
-        
+
         self.onPlaylistItem(@{@"playlistItem": [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding]});
     }
 }
@@ -749,22 +754,22 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
             self.onFullScreenExit(@{});
         }
     }
-    
+
 }
 
 -(void)explode
 {
     CGRect rect = CGRectMake(0, 0, [[UIScreen mainScreen] applicationFrame].size.width, [[UIScreen mainScreen] applicationFrame].size.height);
-    
+
     self.frame = rect;
-    
+
     [self setBackgroundColor:[UIColor blackColor]];
 }
 
 -(void)shrink
 {
     self.frame = _initFrame;
-    
+
     [self setBackgroundColor:[UIColor whiteColor]];
 }
 
@@ -774,7 +779,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         if (self.onFullScreenRequested) {
             self.onFullScreenRequested(@{});
         }
-        
+
         if (_nativeFullScreen) {
             [self explode];
         }
@@ -782,7 +787,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         if (self.onFullScreenExitRequested) {
             self.onFullScreenExitRequested(@{});
         }
-        
+
         if (_nativeFullScreen) {
             [self shrink];
         }
@@ -844,7 +849,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     if (self.onPause) {
         self.onPause(@{});
     }
-    
+
     [self.player pause];
 }
 
@@ -852,7 +857,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
     if (self.onPlay) {
         self.onPlay(@{});
     }
-    
+
     [self.player play];
 }
 
