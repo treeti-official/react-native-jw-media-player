@@ -405,10 +405,11 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         id vmapUrl = playlistItem[@"vmapUrl"];
 
         // as per JW doc: if you set both an adVmap and an ad schedule, the schedule array will be ignored.
+        // however vmap is not working at the moment: https://github.com/chaimPaneth/react-native-jw-media-player/issues/86
         if(adsArray.count > 0 || vmapUrl != nil) {
             JWAdConfig* advertising = [JWAdConfig new];
             advertising.client = JWAdClientVast;
-            advertising.adVmap = vmapUrl; // not working at moment: https://github.com/chaimPaneth/react-native-jw-media-player/issues/86
+            advertising.adVmap = vmapUrl;
 
             advertising.schedule = adsArray;
             config.advertising = advertising;
