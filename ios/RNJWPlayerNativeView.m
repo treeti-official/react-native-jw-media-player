@@ -408,7 +408,7 @@ NSString* const AudioInterruptionsEnded = @"AudioInterruptionsEnded";
         if(adsArray.count > 0 || vmapUrl != nil) {
             JWAdConfig* advertising = [JWAdConfig new];
             advertising.client = JWAdClientVast;
-            advertising.adVmap = vmapUrl;
+            advertising.adVmap = vmapUrl; // not working at moment: https://github.com/chaimPaneth/react-native-jw-media-player/issues/86
 
             advertising.schedule = adsArray;
             config.advertising = advertising;
