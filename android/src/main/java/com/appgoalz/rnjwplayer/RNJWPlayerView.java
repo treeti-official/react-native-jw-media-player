@@ -40,6 +40,7 @@ import com.longtailvideo.jwplayer.events.AudioTrackChangedEvent;
 import com.longtailvideo.jwplayer.events.AudioTracksEvent;
 import com.longtailvideo.jwplayer.events.BeforeCompleteEvent;
 import com.longtailvideo.jwplayer.events.AdImpressionEvent;
+import com.longtailvideo.jwplayer.events.AdStartedEvent;
 import com.longtailvideo.jwplayer.events.BufferEvent;
 import com.longtailvideo.jwplayer.events.CompleteEvent;
 import com.longtailvideo.jwplayer.events.ControlBarVisibilityEvent;
@@ -95,6 +96,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
         VideoPlayerEvents.OnDisplayClickListener,
         VideoPlayerEvents.OnFirstFrameListener,
         AdvertisingEvents.OnAdImpressionListener,
+        AdvertisingEvents.OnAdStartedListener,
         AdvertisingEvents.OnBeforeCompleteListener,
         AudioManager.OnAudioFocusChangeListener {
     public RNJWPlayer mPlayer = null;
@@ -239,6 +241,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
                     mPlayer.removeOnPlaylistCompleteListener(player);
                     mPlayer.removeOnFirstFrameListener(player);
                     mPlayer.removeOnAdImpressionListener(player);
+                    mPlayer.removeOnAdStartedListener(player);
                     mPlayer.removeOnBeforeCompleteListener(player);
                     mPlayer.removeOnControlsListener(player);
                     mPlayer.removeOnControlBarVisibilityListener(player);
@@ -282,6 +285,7 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
             mPlayer.addOnPlaylistCompleteListener(this);
             mPlayer.addOnFirstFrameListener(this);
             mPlayer.addOnAdImpressionListener(this);
+            mPlayer.addOnAdStartedListener(this);
             mPlayer.addOnBeforeCompleteListener(this);
             mPlayer.addOnControlsListener(this);
             mPlayer.addOnControlBarVisibilityListener(this);
@@ -794,6 +798,11 @@ public class RNJWPlayerView extends RelativeLayout implements VideoPlayerEvents.
         getReactContext().getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "topAdStarted", event);
     }
 
+    @Override
+    public void onAdStarted(AdStartedEvent adStartedEvent) {
+        // player is paused due to lost audio focus on VPAID impression
+        mPlayer.play();
+    }
 
     @Override
     public void onBeforeComplete(BeforeCompleteEvent beforeCompleteEvent) {
